@@ -24,11 +24,11 @@
  * the src file that includes this header.
  */
 #ifndef ERR_N
-#define ERR_N ERR_4578919
+#define ERR_V ERR_4578919
 #endif
 
 // Declaration of the error value container
-ERR_T ERR_N;
+ERR_T ERR_V;
 
 /*
  * If a function returns this value, it will mean that it has been executed
@@ -40,26 +40,10 @@ ERR_T ERR_N;
 
 /*
  * If the given expression returns a non OK value, the program will jump to the
- * EXCEPT block with the given error_value.
+ * EXCEPT label with the given error_value.
  */
 #define TRY(error_value, expression) \
-	if (expression == OK) { \
-		ERR_N = error_value; \
-		goto except; \
+	if ((expression) != OK) { \
+		ERR_V = error_value; \
+		goto EXCEPT; \
 	} \
-
-
-/*
- * The given case_block defines what actions to perform for each possible error
- * value.
- *
- * If the program reaches the except block, the respective error value will be
- * returned. If not, OK will be returned.
- */
-#define EXCEPT(case_block) \
-	return OK; \
-	except: \
-		switch(ERR_N) { \
-		case_block \
-		} \
-		return ERR_N;
