@@ -26,7 +26,7 @@ ERR_T norm(int dim, double* x, double* n) {
 		norma(dim, x, n);
 	} else {
 		gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
-		TRY(-1, (*n = gsl_blas_dnrm2(&x_gsl.vector)) < 0)
+		TRY(-1, (*n = gsl_blas_dnrm2(&x_gsl.vector)) >= 0)
 	}
 
 	return OK;
@@ -34,7 +34,7 @@ ERR_T norm(int dim, double* x, double* n) {
 	EXCEPT: {
 		switch(ERR_V) {
 			case -1:
-				fprintf(stderr, "[x] Ezin izan da norma kalkulatu.");
+				fprintf(stderr, "[x] Ezin izan da norma kalkulatu.\n");
 				break;
 		}
 
@@ -46,8 +46,8 @@ ERR_T dist(int dim, double* x0, double* x1, double* d) {
 	gsl_vector_view x0_gsl = gsl_vector_view_array(x0, dim);
 	gsl_vector_view x1_gsl = gsl_vector_view_array(x1, dim);
 
-	TRY(-1, gsl_vector_sub(&x0_gsl.vector, &x1_gsl.vector))
-	TRY(-2, norm(dim, x0, d))
+	TRY(-1, gsl_vector_sub(&x0_gsl.vector, &x1_gsl.vector) == OK)
+	TRY(-2, norm(dim, x0, d) == OK)
 
 	return OK;
 
@@ -55,13 +55,13 @@ ERR_T dist(int dim, double* x0, double* x1, double* d) {
 		switch (ERR_V) {
 			case -1:
 				fprintf(stderr,
-						"[x] Distantzia kalkulatzeko bektoreen arteko kenketa \
-						egitean errore kritiko bat egon da.");
+						"[x] Distantzia kalkulatzeko bektoreen arteko kenketa "
+						"egitean errore kritiko bat egon da.\n");
 				break;
 			case -2:
 				fprintf(stderr,
-						"[x] Distantzia kalkulatzeko norma kalkulatzean errore \
-						kritiko bat egon da.");
+						"[x] Distantzia kalkulatzeko norma kalkulatzean errore "
+						"kritiko bat egon da.\n");
 				break;
 		}
 
@@ -78,27 +78,28 @@ ERR_T solve(int dim, double* x0, double* fx, double* jx, double* x) {
 	gsl_matrix_view jx_gsl = gsl_matrix_view_array(fx, dim, dim);
 	gsl_permutation* p = gsl_permutation_alloc(4);
 
-	TRY(-1, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s))
-	TRY(-2, gsl_linalg_LU_solve(&jx_gsl.matrix, p,&fx_gsl.vector,&x_gsl.vector))
+	TRY(-1, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
+	TRY(-2,
+		gsl_linalg_LU_solve(&jx_gsl.matrix,p,&fx_gsl.vector,&x_gsl.vector)== OK)
 
-	TRY(-3, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector))
-	TRY(-4, gsl_vector_scale(&x_gsl.vector, -1))
+	TRY(-3, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
+	TRY(-4, gsl_vector_scale(&x_gsl.vector, -1) == OK)
 
 	return OK;
 
 	EXCEPT: {
 		switch(ERR_V) {
 			case -1:
-				fprintf(stderr, "[x] Ezin izan da LU deskonposaketa egin.");
+				fprintf(stderr, "[x] Ezin izan da LU deskonposaketa egin.\n");
 				break;
 			case -2:
-				fprintf(stderr, "[x] Ezin izan da sistema lineala ebatzi.");
+				fprintf(stderr, "[x] Ezin izan da sistema lineala ebatzi.\n");
 				break;
 			case -3:
-				fprintf(stderr, "[x] Ezin izan da bektore kenketa egin.");
+				fprintf(stderr, "[x] Ezin izan da bektore kenketa egin.\n");
 				break;
 			case -4:
-				fprintf(stderr, "[x] Ezin izan da bektore eskalaketa egin.");
+				fprintf(stderr, "[x] Ezin izan da bektore eskalaketa egin.\n");
 				break;
 		}
 
@@ -106,41 +107,49 @@ ERR_T solve(int dim, double* x0, double* fx, double* jx, double* x) {
 	}
 }
 
+ERR_T solve_1dim(int dim, double* x0, double* fx, double* jx, double* x) {
+
+	TRY(-1, jx != 0);
+	*x = *x0 - (*fx)/(*jx);
+
+	return OK;
+
+	EXCEPT:
+		return ERR_V;
+}
+
 ERR_T findroot(int dim, double* x0, double* x, double tol) {
 	double errorea;
 	double* x1;
-	double* x2;
 	double* fx;
 	double* jx;
 	double* aux;
 
 	// Inicialize pointers with to free safely
 	x1 = NULL;
-	x2 = NULL;
 	fx = NULL;
 	jx = NULL;
 
 	TRY(-1, (x1 = (double*) malloc(SIZE)) != NULL)
-	TRY(-2, (x2 = (double*) malloc(SIZE)) != NULL)
-	TRY(-3, (fx = (double*) malloc(SIZE)) != NULL)
-	TRY(-4, (jx = (double*) malloc(SIZE)) != NULL)
+	TRY(-2, (fx = (double*) malloc(SIZE)) != NULL)
+	TRY(-3, (jx = (double*) malloc(SIZE)) != NULL)
 
 	gsl_set_error_handler_off();
 
 	memcpy(x1, x0, SIZE);
-	TRY(-5, norm(dim, x1, &errorea))
+	TRY(-4, norm(dim, x1, &errorea) == OK)
 
 	while (errorea > tol) {
 		f(dim, x1, fx);
 		jakobiarra(dim, x1, jx);
 
-		TRY(-6, solve(dim, x1, fx, jx, x2))
-
-		TRY(-7, dist(dim, x2, x1, &errorea))
+		TRY(-5, jx != 0);
+		errorea = (*fx)/(*jx);
+		*x = *x1 - errorea;
 
 		aux = x1;
-		x1 = x2;
-		x2 = aux;
+		x1 = x;
+		x = aux;
 	}
 
 	return OK;
@@ -150,23 +159,21 @@ ERR_T findroot(int dim, double* x0, double* x, double tol) {
 			case -1:
 			case -2:
 			case -3:
+				fprintf(stderr,
+						"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+				break;
 			case -4:
 				fprintf(stderr,
-						"[x] Ezin izan da memoria nahikoa erreserbatu.");
+						"[x] Norma kalkulatzean errore kritiko bat egon da.\n");
 				break;
 			case -5:
 				fprintf(stderr,
-						"[x] Norma kalkulatzean errore kritiko bat egon da.");
-				break;
-			case -7:
-				fprintf(stderr,
-						"[x] Distantzia kalkulatzean errore kritiko bat egon \
-						da.");
+						"[x] Distantzia kalkulatzean errore kritiko bat egon "
+						"da.\n");
 				break;
 		}
 
 		free(x1);
-		free(x2);
 		free(fx);
 		free(jx);
 
@@ -174,7 +181,7 @@ ERR_T findroot(int dim, double* x0, double* x, double tol) {
 	}
 }
 
-int main(int argc, char** args) {
+int main(int argc, char** argv) {
 	int dim, i;
 	char* path;
 	double tol;
@@ -187,7 +194,7 @@ int main(int argc, char** args) {
 
 	// Save the conf file path
 	TRY(-1, argc == 2)
-	path = args[1];
+	path = argv[1];
 
 	// Get conf file data
 	TRY(-2, datuak_lortu(path, &dim, &x0, &tol) > 0)
@@ -195,7 +202,7 @@ int main(int argc, char** args) {
 
 	// Find root
 	TRY(-3, (x = (double*) malloc(SIZE)) != NULL)
-	TRY(-4, findroot(dim, x0, x, tol) == 0)
+	TRY(-4, findroot(dim, x0, x, tol) == OK)
 
 	// Output result
 	printf("Emaitza: (");
@@ -213,15 +220,15 @@ int main(int argc, char** args) {
 				break;
 			case -2:
 				fprintf(stderr,
-						"[x] Ezin izan da konfigurazio fitxategia ondo \
-						irakurri.\n");
+						"[x] Ezin izan da konfigurazio fitxategia ondo "
+						"irakurri.\n");
 				break;
 			case -3:
 				fprintf(stderr,
-						"[x] Ezin izan da memoria nahikoa erreserbatu.");
+						"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
 				break;
 			case -4:
-				fprintf(stderr, "[x] Ezin izan da emaitza kalkulatu.");
+				fprintf(stderr, "[x] Ezin izan da emaitza kalkulatu.\n");
 				break;
 		}
 

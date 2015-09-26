@@ -6,7 +6,7 @@
  */
 
 /*
- * ERR_T, ERR_N and OK can be defined by the user of this header before
+ * ERR_T, ERR_N can be defined by the user of this header before
  * including it.
  *
  * In fact, it is encouraged that they are defined explicitely in the src file.
@@ -23,7 +23,7 @@
  * The name reserved to store the error values, this name shouln't be used in
  * the src file that includes this header.
  */
-#ifndef ERR_N
+#ifndef ERR_V
 #define ERR_V ERR_4578919
 #endif
 
@@ -31,19 +31,11 @@
 ERR_T ERR_V;
 
 /*
- * If a function returns this value, it will mean that it has been executed
- * without any issue.
- */
-#ifndef OK
-#define OK 0
-#endif
-
-/*
- * If the given expression returns a non OK value, the program will jump to the
- * EXCEPT label with the given error_value.
+ * If the given expression is false, the program will jump to the EXCEPT label
+ * with the given error_value.
  */
 #define TRY(error_value, expression) \
-	if ((expression) != OK) { \
+	if ((expression) != 1) { \
 		ERR_V = error_value; \
 		goto EXCEPT; \
-	} \
+	}

@@ -34,8 +34,5 @@
 # Eclipse
 .project
 .cproject
-
-# Eclipse Debug
-*.d
-makefile
-*.mk
+.settings
+Debug
