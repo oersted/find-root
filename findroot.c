@@ -42,35 +42,27 @@ ERR_T norm(int dim, double* x, double* n) {
 	}
 }
 
-ERR_T dist(int dim, double* x0, double* x1, double* d) {
-	gsl_vector_view x0_gsl = gsl_vector_view_array(x0, dim);
-	gsl_vector_view x1_gsl = gsl_vector_view_array(x1, dim);
-
-	TRY(-1, gsl_vector_sub(&x0_gsl.vector, &x1_gsl.vector) == OK)
-	TRY(-2, norm(dim, x0, d) == OK)
-
-	return OK;
-
-	EXCEPT: {
-		switch (ERR_V) {
-			case -1:
-				fprintf(stderr,
-						"[x] Distantzia kalkulatzeko bektoreen arteko kenketa "
-						"egitean errore kritiko bat egon da.\n");
-				break;
-			case -2:
-				fprintf(stderr,
-						"[x] Distantzia kalkulatzeko norma kalkulatzean errore "
-						"kritiko bat egon da.\n");
-				break;
-		}
-
-		return ERR_V;
-	}
-}
-
-ERR_T solve(int dim, double* x0, double* fx, double* jx, double* x) {
+/*
+ * The result will be stored in x and x0 will contain the difference between x
+ * and the result of the previous iteration.
+ */
+ERR_T findroot(int dim, double tol, double* x0, double* x) {
 	int s;
+	double errorea;
+	double* fx;
+	double* jx;
+	double* aux;
+
+	// INITIALIZATION
+
+	// Initialize pointers with NULL to free safely
+	fx = NULL;
+	jx = NULL;
+
+	TRY(-1, (fx = (double*) malloc(SIZE)) != NULL)
+	TRY(-2, (jx = (double*) malloc(SIZE)) != NULL)
+
+	gsl_set_error_handler_off();
 
 	gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
 	gsl_vector_view x0_gsl = gsl_vector_view_array(x0, dim);
@@ -78,78 +70,46 @@ ERR_T solve(int dim, double* x0, double* fx, double* jx, double* x) {
 	gsl_matrix_view jx_gsl = gsl_matrix_view_array(fx, dim, dim);
 	gsl_permutation* p = gsl_permutation_alloc(4);
 
-	TRY(-1, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
-	TRY(-2,
-		gsl_linalg_LU_solve(&jx_gsl.matrix,p,&fx_gsl.vector,&x_gsl.vector)== OK)
+	// NEWTON-RAPHSON LOOP
 
-	TRY(-3, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
-	TRY(-4, gsl_vector_scale(&x_gsl.vector, -1) == OK)
+	/*
+	 * a, b and c are vectors of dim dimensions
+	 * FX and JX are square matrixes of dim dimensions
+	 *
+	 * b = a - c
+	 * WHERE JX * c = FX
+	 *
+	 * a beign the result of the previous iteration (or the initial point)
+	 * b beign the result of the current iteration (or the final result)
+	 */
 
-	return OK;
+	// x0 == a
 
-	EXCEPT: {
-		switch(ERR_V) {
-			case -1:
-				fprintf(stderr, "[x] Ezin izan da LU deskonposaketa egin.\n");
-				break;
-			case -2:
-				fprintf(stderr, "[x] Ezin izan da sistema lineala ebatzi.\n");
-				break;
-			case -3:
-				fprintf(stderr, "[x] Ezin izan da bektore kenketa egin.\n");
-				break;
-			case -4:
-				fprintf(stderr, "[x] Ezin izan da bektore eskalaketa egin.\n");
-				break;
-		}
+	x = x0;
+	TRY(-3, norm(dim, x, &errorea) == OK)
 
-		return ERR_V;
-	}
-}
-
-ERR_T solve_1dim(int dim, double* x0, double* fx, double* jx, double* x) {
-
-	TRY(-1, jx != 0);
-	*x = *x0 - (*fx)/(*jx);
-
-	return OK;
-
-	EXCEPT:
-		return ERR_V;
-}
-
-ERR_T findroot(int dim, double* x0, double* x, double tol) {
-	double errorea;
-	double* x1;
-	double* fx;
-	double* jx;
-	double* aux;
-
-	// Inicialize pointers with to free safely
-	x1 = NULL;
-	fx = NULL;
-	jx = NULL;
-
-	TRY(-1, (x1 = (double*) malloc(SIZE)) != NULL)
-	TRY(-2, (fx = (double*) malloc(SIZE)) != NULL)
-	TRY(-3, (jx = (double*) malloc(SIZE)) != NULL)
-
-	gsl_set_error_handler_off();
-
-	memcpy(x1, x0, SIZE);
-	TRY(-4, norm(dim, x1, &errorea) == OK)
+	// x == a
+	// x0 == a
 
 	while (errorea > tol) {
-		f(dim, x1, fx);
-		jakobiarra(dim, x1, jx);
+		f(dim, x, fx);
+		jakobiarra(dim, x, jx);
 
-		TRY(-5, jx != 0);
-		errorea = (*fx)/(*jx);
-		*x = *x1 - errorea;
+		TRY(-4, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
+		TRY(-5,
+			gsl_linalg_LU_solve(
+				&jx_gsl.matrix, p, &fx_gsl.vector, &x0_gsl.vector) == OK
+		)
 
-		aux = x1;
-		x1 = x;
-		x = aux;
+		// x == a
+		// x0 == c
+
+		TRY(-6, norm(dim, x0, &errorea) == OK)
+
+		TRY(-7, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
+
+		// x == b
+		// x0 == c
 	}
 
 	return OK;
@@ -158,22 +118,36 @@ ERR_T findroot(int dim, double* x0, double* x, double tol) {
 		switch(ERR_V) {
 			case -1:
 			case -2:
-			case -3:
 				fprintf(stderr,
 						"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
 				break;
+			case -3:
+				fprintf(stderr,
+						"[x] Hasierako puntuaren norma kalkulatzean errore "
+						"kritiko bat egon da.\n");
+				break;
 			case -4:
 				fprintf(stderr,
-						"[x] Norma kalkulatzean errore kritiko bat egon da.\n");
+						"[x] Ezin izan da JX * x = FX ekuazio sistema "
+						"linealaren LU deskonposaketa egin.\n");
 				break;
 			case -5:
 				fprintf(stderr,
-						"[x] Distantzia kalkulatzean errore kritiko bat egon "
-						"da.\n");
+						"[x] Ezin izan da JX * x = FX ekuazio sistema lineala "
+						"ebatzi LU deskonposaketa erabiliz\n");
+				break;
+			case -6:
+				fprintf(stderr,
+						"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
+						"norma kalkulatzean errore kritiko bat egon da.");
+				break;
+			case -7:
+				fprintf(stderr,
+						"[x] Bektoreen arteko kenketa egitean errore kritiko "
+						"bat egon da");
 				break;
 		}
 
-		free(x1);
 		free(fx);
 		free(jx);
 
@@ -188,7 +162,7 @@ int main(int argc, char** argv) {
 	double* x;
 	double* x0;
 
-	// Inicialize pointers with to free safely
+	// Initialize pointers with to free safely
 	x = NULL;
 	x0 = NULL;
 
@@ -202,7 +176,7 @@ int main(int argc, char** argv) {
 
 	// Find root
 	TRY(-3, (x = (double*) malloc(SIZE)) != NULL)
-	TRY(-4, findroot(dim, x0, x, tol) == OK)
+	TRY(-4, findroot(dim, tol, x0, x) == OK)
 
 	// Output result
 	printf("Emaitza: (");
