@@ -13,10 +13,6 @@
 #define OK 0
 #include "exceptions.h"
 
-// Globals
-
-size_t SIZE;
-
 // User options
 
 char HAVE_NORM = 0;
@@ -51,7 +47,6 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 	double errorea;
 	double* fx;
 	double* jx;
-	double* aux;
 
 	// INITIALIZATION
 
@@ -59,15 +54,15 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 	fx = NULL;
 	jx = NULL;
 
-	TRY(-1, (fx = (double*) malloc(SIZE)) != NULL)
-	TRY(-2, (jx = (double*) malloc(SIZE)) != NULL)
+	TRY(-1, (fx = (double*) malloc(dim * sizeof(double))) != NULL)
+	TRY(-2, (jx = (double*) malloc(dim * dim * sizeof(double))) != NULL)
 
 	gsl_set_error_handler_off();
 
 	gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
 	gsl_vector_view x0_gsl = gsl_vector_view_array(x0, dim);
 	gsl_vector_view fx_gsl = gsl_vector_view_array(fx, dim);
-	gsl_matrix_view jx_gsl = gsl_matrix_view_array(fx, dim, dim);
+	gsl_matrix_view jx_gsl = gsl_matrix_view_array(jx, dim, dim);
 	gsl_permutation* p = gsl_permutation_alloc(4);
 
 	// NEWTON-RAPHSON LOOP
@@ -172,17 +167,16 @@ int main(int argc, char** argv) {
 
 	// Get conf file data
 	TRY(-2, datuak_lortu(path, &dim, &x0, &tol) > 0)
-	SIZE = dim * sizeof(double);
 
 	// Find root
-	TRY(-3, (x = (double*) malloc(SIZE)) != NULL)
+	TRY(-3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
 	TRY(-4, findroot(dim, tol, x0, x) == OK)
 
 	// Output result
 	printf("Emaitza: (");
 	printf("%f", x[0]);
 	for (i = 1; i < dim; ++i)
-		printf(", %lf", x[i]);
+		printf(", %f", x[i]);
 	printf(")");
 
 	return 0;
