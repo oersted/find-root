@@ -2,6 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[basque]{babel}
+\usepackage[parfill]{parskip}
 \author{Jon Ezeiza}
 \title{FindRoot funtzioaren inplementazioa}
 \begin{document}
@@ -9,16 +10,116 @@
 \maketitle
 
 \begin{abstract}
+$f: R^n \rightarrow R^n$ formako funtzioen erroak kalkulatzen dituen programa bat inplementatzea da praktika honen helburua. Hau konputazioko problema klasiko bat da eta FindRoot izena eman ohi zaie funtzioa hau betetzen duten programei.
 
+Erroaren kalkulua hurbilketaz egiten da, Newton-Raphson metodo iteratiboa erabiliz hain zuzen. Ekuazio sistemak ebazteko metodo aljebraiko klasikoak ez dira nahiko flexibleak, ez baitako metodo bakarra $R^n \rightarrow R^n$ domeinu osoa lantzea ahalbidetzen duena. Gainera, metodo eta algoritmo guzti horiek konputazioak eskuz egiteko daude diseinatuta eta, ondorioz, ez dira aukera hoberena konputagailu batean inplementatzeko.
+
+Gaur egungo sistemek duten konputazio ahalmena kontuan harturik, hurbilpen iteratiboa da dudarik gabe aukera egokiena kasuistika gehienetarako. Esan bezala, jada badugu metodo sinple bat, Newton-Raphson metodoa, edozein ordenatako funtzioen erroa hurbildu dezakeena nahi adinako zehaztasunarekin eta eraginkortasun handiarekin. 
 \end{abstract}
 
 \section{Oinarri teorikoak}
+FindRoot funtzioa jada denbora luzez ezagunak izan diren kontzeptu matematikoetan dago oinarrituta. Atal honetan oinarri teoriko horiek laburki azalduko dira, programaren inplementazioan hartu diren erabakiak zein kontzeptutan oinarritzen diren zehazteko.
 
 \subsection{Taylor-en garapena}
 
+Taylor-en garapenari esker, edozein funtzio jarraitu bere deribatuen konbinazio lineal bidez adieraz daiteke, funtzioak puntu jakin batean duen balioa emanda. Funtzioa $n$ aldiz deribagarria bada konputatu nahi dugun puntuan, zehaztasun osoz adierazi ahalko da serie infinitu baten bitartez.
+
+Hala ere, funtzio guztiek ez dute baldintza hori betetzen, eta konputazioaren arloan ez da fisikoki posiblea serie infinituak kalkulatzea. Taylor-en garapena, ordea, funtzioaren balioa hurbiltzeko ere erabili daiteke. Geroz eta deribatu gehiago erabili, orduan eta zehatzagoa izango da hurbilpena emandako hasierako balioa egokia bada. Horrez gain, Taylor-en garapenak  hurbilpenaren errorea bornatzeko ahalmena ere ematen digu.
+
+$$f(x + h) = \sum_{n = 0}^{\infty} \frac{1}{n!} f^{(n)}(x) \cdot h^n$$
+
+$$f(x + h) = (\sum_{n = 0}^{k} \frac{1}{n!} f^{(n)}(x) \cdot h^n) + \frac{1}{(k+1)!} f^{(k+1)}(c) \cdot h^{k+1} \quad non \quad c \in (x, x+h)$$
+
 \subsection{Newton-Raphson metodoa}
 
+Taylor-en garapena oso erabilgarria izan daiteke zenbait kontextutan, hala ere, praktika hau lantzeko momentuan ez daukagu ezagutza nahikorik funtzio baten deribatuak automatikoki kalkulatzeko eta ez da arrazoizkoa jakobiar guztiak erabiltzaileari eskatzea kasu bakoitzean. Hortaz, metodoaren moldapen bat behar dugu, deribatuak era sistematikoan kalkulatzea behar ez duena, Newton-Raphson metodoa hain zuzen.
+
+Newton-Raphson metodoa da FindRoot funtzioaren muina. Metodo honek Taylor-en lehenengo mailako garapena erabiltzen du soilik funtzioaren erroa hurbiltzeko. Deribatu segida luze bat batu beharrean, hasierako balioarekin hasiz, behin eta berriro pasako du formula sinple batetik, iterazio bakoitzean helburura gehiago hurbiltzen delarik. Hortaz, emaitzaren zehaztasuna iterazio kopuruaren mendekoa da, eskura ditugun deribatu kopuruaren mendekoa izan beharrean. Hau askoz maneiagarriagoa konputazioaren ikuspegitik.
+
+Horrez gain, emaitza baten errorea bornatu daiteke. Errore maximoa beti iterazio bateko eta aurreko iterazioko emaitzen arteko diferentziaren norma izango da.
+
+Aipatutako formula, ezan bezala, Taylor-en lehen mailako garapenetik lor daiteke zuzenean.
+
+$$0 = f(x) \cong f(x_0) + f'(x_0) \cdot (x - x_0)$$
+
+$$x = x_0 - \frac{f(x_0)}{f'(x_0)}$$
+
+$n$ dimentsiotan honela geldituko litzateke.
+
+$$\bar{x} = \bar{x_0} - j(\overline{x_0})^{-1} \cdot f(\overline{x_0})$$
+
+$$
+\left(
+\begin{array}{c}
+x_1\\
+x_2\\
+\vdots\\
+x_n
+\end{array}
+\right) = 
+\left(
+\begin{array}{c}
+x_{0_1}\\
+x_{0_2}\\
+\vdots\\
+x_{0_n}
+\end{array}
+\right) -
+\left(
+\begin{array}{cccc}
+\frac{\partial f_{1}(\overline{x_0})}{\partial \overline{{x_0}_1}} & \frac{\partial f_{1}(\overline{x_0})}{\partial \overline{{x_0}_2}} & \ldots & \frac{\partial f_{1}(\overline{x_0})}{\partial \overline{{x_0}_n}}\\
+\frac{\partial f_{2}(\overline{x_0})}{\partial \overline{{x_0}_1}} & \frac{\partial f_{2}(\overline{x_0})}{\partial \overline{{x_0}_2}} & \ldots & \frac{\partial f_{2}(\overline{x_0})}{\partial \overline{{x_0}_n}}\\
+\vdots & \vdots &  & \vdots\\
+\frac{\partial f_{n}(\overline{x_0})}{\partial \overline{{x_0}_1}} & \frac{\partial f_{n}(\overline{x_0})}{\partial \overline{{x_0}_2}} & \ldots & \frac{\partial f_{n}(\overline{x_0})}{\partial \overline{{x_0}_n}}
+\end{array}
+\right)^{-1} \cdot
+\left(
+\begin{array}{c}
+f_{1}(\overline{x_0})\\
+f_{2}(\overline{x_0})\\
+\vdots\\
+f_{n}(\overline{x_0})
+\end{array}
+\right)
+$$
+
+Iterazio bakoitzeko errore maximoa $|j(\overline{x_0})^{-1} \cdot f(\overline{x_0})|$ izango da beraz.
+
+\subsubsection{Konbergentzia lokalaren teorema}
+
+Taylor-en garapenetik lortu denez, badakigu Newton-Raphson-en lehenengo iterazioaren emaitza emandako hasierako puntua baina gertuago egongo dela funtzioaren errotik. Hala ere, honek ez du frogatzen sekuentziak beti helburuan konbergituko duenik.
+
+Konbergentzia lokalaren teoremari esker, badakigu behintzat $\forall x \in (x_0, x): \quad |x_0 - j(\overline{x_0})^{-1} \cdot f(\overline{x_0})| < 1$ espresioa betetzen bada, $x_0$ horrekin Newton-Raphson sekuentziak $x$ errorantz konbergituko duela. Hau honela da $x$ erroa Newton-Raphson formularen puntu finkoa delako.
+
+Hona hemen konbergentzia lokalaren teoremaren adierazpen formala.
+
+Izan bitez $g:R^n \rightarrow R^n$ funtzioa, honen $p$ puntu finkoa, $g(p) = p$ izanik, eta $x_i = g(x_{i-1}) \quad i = 1, 2, ..., n$ sekuentzia.
+
+Izan bedi, gainera, $T_{\delta} = (p - \delta, p + \delta)$ tartea, $\forall x \in T_{\delta} \quad |g(x)| < 1$ izanik.
+
+Baldin, $x_0 \in T_{\delta}$, honako hauek beteko dira.
+
+\begin{itemize}
+\item $x_i \in T_{\delta} \quad i = 1, 2, ..., n$
+\item $\lim_{n \rightarrow \infty} x_i = p$
+\item $\neg\exists q \in T_{\delta} : \quad q \neq p \wedge g(q) = q$
+\end{itemize}
+
 \subsubsection{Arazoak}
+
+Konbergentzia lokalaren teoremak exekuzio egokia ziurtatzen digu zenbait baldintza konkretutan. Baldintza horietatik kanpo ere emaitza zuzenera konbergitzea ere posible da, baina ez dago ziurtatuta.
+
+FindRoot programa arazo anitzekin aurki daiteke, problema ebazteko hasierako puntu desegokia eman delako edo emandako funtzioaren izaera intrintsekoagatik.
+
+Hona hemen arazo esanguratsuenak.
+
+\paragraph{Jakobiar nulua}
+
+\paragraph{Dibergentziak}
+
+\paragraph{Singularitateak}
+
+\paragraph{Begizta amaigabeak}
 
 \section{Programaren erabilera}
 
@@ -36,6 +137,6 @@
 
 \subsubsection{Aukeren probak}
 
-\subsubsection{Newton-Raphson metodoaren arazoen tratamendua testatzen}
+\subsubsection{Arazoen tratamendua testatzen}
 
 \end{document}
