@@ -36,3 +36,10 @@
 .cproject
 .settings
 Debug
+
+# TexMaker
+latex-adibidea.tex
+*.pdf
+*.aux
+*.log
+*.synctex.gz
