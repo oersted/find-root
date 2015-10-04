@@ -35,7 +35,7 @@ ERR_T ERR_V;
  * with the given error_value.
  */
 #define TRY(error_value, expression) \
-	if ((expression) != 1) { \
+	if ((expression) == 0) { \
 		ERR_V = error_value; \
 		goto EXCEPT; \
 	}
