@@ -87,7 +87,7 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 	gsl_vector_view x0_gsl = gsl_vector_view_array(x0, dim);
 	gsl_vector_view fx_gsl = gsl_vector_view_array(fx, dim);
 	gsl_matrix_view jx_gsl = gsl_matrix_view_array(jx, dim, dim);
-	gsl_permutation* p = gsl_permutation_alloc(4);
+	gsl_permutation* p = gsl_permutation_alloc(dim);
 
 	// NEWTON-RAPHSON LOOP
 
