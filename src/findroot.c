@@ -41,6 +41,16 @@ void handler(const char* reason, const char* file, int line, int gsl_errno) {
 	fprintf(stderr, "%s\n", reason);
 }
 
+void output_result(int dim, double* x) {
+	int i;
+
+	printf("Emaitza: (");
+	printf("%f", x[0]);
+	for (i = 1; i < dim; ++i)
+		printf(", %f", x[i]);
+	printf(")");
+}
+
 ERR_T norm(int dim, double* x, double* n) {
 	if (HAVE_NORM) {
 		norma(dim, x, n);
@@ -114,6 +124,9 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 		f(dim, x, fx);
 		jakobiarra(dim, x, jx);
 
+		// fx == FX
+		// jx == JX
+
 		TRY(4, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
 		TRY(5,
 			gsl_linalg_LU_solve(
@@ -175,7 +188,7 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 }
 
 int main(int argc, char** argv) {
-	int dim, i;
+	int dim;
 	char* path;
 	double tol;
 	double* x;
@@ -196,12 +209,7 @@ int main(int argc, char** argv) {
 	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
 	TRY(4, findroot(dim, tol, x0, x) == OK)
 
-	// Output result
-	printf("Emaitza: (");
-	printf("%f", x[0]);
-	for (i = 1; i < dim; ++i)
-		printf(", %f", x[i]);
-	printf(")");
+	output_result(dim, x);
 
 	return 0;
 
