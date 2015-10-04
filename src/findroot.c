@@ -33,6 +33,9 @@ void handler(const char* reason, const char* file, int line, int gsl_errno) {
 		case GSL_EINVAL:
 			fprintf(stderr, "GSL INVALID ARGUMENT: ");
 			break;
+		default:
+			fprintf(stderr, "GSL ERROR: ");
+			break;
 	}
 
 	fprintf(stderr, "%s\n", reason);
@@ -111,8 +114,7 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 		f(dim, x, fx);
 		jakobiarra(dim, x, jx);
 
-		int temp = gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s);
-		TRY(4, temp == OK)
+		TRY(4, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
 		TRY(5,
 			gsl_linalg_LU_solve(
 				&jx_gsl.matrix, p, &fx_gsl.vector, &x0_gsl.vector) == OK
