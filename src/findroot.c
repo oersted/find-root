@@ -3,6 +3,7 @@
 #include <string.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_errno.h>
 
 #include "datuak_lortu.h"
 #include "funtzioa.h"
@@ -17,6 +18,25 @@
 // User options
 
 char HAVE_NORM = 0;
+
+void handler(const char* reason, const char* file, int line, int gsl_errno) {
+	switch(gsl_errno) {
+		case GSL_EDOM:
+			fprintf(stderr, "GSL DOMAIN ERROR: ");
+			break;
+		case GSL_ERANGE:
+			fprintf(stderr, "GSL RANGE ERROR: ");
+			break;
+		case GSL_ENOMEM:
+			fprintf(stderr, "GSL NO MEMORY AVAILABLE: ");
+			break;
+		case GSL_EINVAL:
+			fprintf(stderr, "GSL INVALID ARGUMENT: ");
+			break;
+	}
+
+	fprintf(stderr, "%s\n", reason);
+}
 
 ERR_T norm(int dim, double* x, double* n) {
 	if (HAVE_NORM) {
@@ -58,7 +78,7 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 	TRY(1, (fx = (double*) malloc(dim * sizeof(double))) != NULL)
 	TRY(2, (jx = (double*) malloc(dim * dim * sizeof(double))) != NULL)
 
-	gsl_set_error_handler_off();
+	gsl_set_error_handler(&handler);
 
 	gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
 	gsl_vector_view x0_gsl = gsl_vector_view_array(x0, dim);
@@ -91,7 +111,8 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 		f(dim, x, fx);
 		jakobiarra(dim, x, jx);
 
-		TRY(4, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
+		int temp = gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s);
+		TRY(4, temp == OK)
 		TRY(5,
 			gsl_linalg_LU_solve(
 				&jx_gsl.matrix, p, &fx_gsl.vector, &x0_gsl.vector) == OK
