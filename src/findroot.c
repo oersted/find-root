@@ -20,6 +20,8 @@
 char HAVE_NORM = 0;
 
 void handler(const char* reason, const char* file, int line, int gsl_errno) {
+	fprintf(stderr, "[x] ");
+
 	switch(gsl_errno) {
 		case GSL_EDOM:
 			fprintf(stderr, "GSL DOMAIN ERROR: ");
@@ -48,7 +50,7 @@ void output_result(int dim, double* x) {
 	printf("%f", x[0]);
 	for (i = 1; i < dim; ++i)
 		printf(", %f", x[i]);
-	printf(")");
+	printf(")\n");
 }
 
 ERR_T norm(int dim, double* x, double* n) {
@@ -56,7 +58,7 @@ ERR_T norm(int dim, double* x, double* n) {
 		norma(dim, x, n);
 	} else {
 		gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
-		TRY(1, (*n = gsl_blas_dnrm2(&x_gsl.vector)) >= 0)
+		TRY(1, (*n = gsl_blas_dnrm2(&x_gsl.vector)) >= 0.0)
 	}
 
 	return OK;
@@ -64,7 +66,8 @@ ERR_T norm(int dim, double* x, double* n) {
 	EXCEPT: {
 		switch(ERR_V) {
 			case 1:
-				fprintf(stderr, "[x] Ezin izan da norma kalkulatu.\n");
+				fprintf(stderr, "[x] Ezin izan da norma kalkulatu, posible da "
+						"bektorea handiegia izatea.\n");
 				break;
 		}
 
@@ -114,21 +117,20 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 
 	// x0 == a
 
-	x = x0;
-	TRY(3, norm(dim, x, &errorea) == OK)
+	memcpy(x, x0, dim * sizeof(double));
 
 	// x == a
 	// x0 == a
 
-	while (errorea > tol) {
+	do {
 		f(dim, x, fx);
 		jakobiarra(dim, x, jx);
 
 		// fx == FX
 		// jx == JX
 
-		TRY(4, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
-		TRY(5,
+		TRY(3, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
+		TRY(4,
 			gsl_linalg_LU_solve(
 				&jx_gsl.matrix, p, &fx_gsl.vector, &x0_gsl.vector) == OK
 		)
@@ -136,13 +138,13 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 		// x == a
 		// x0 == c
 
-		TRY(6, norm(dim, x0, &errorea) == OK)
+		TRY(5, norm(dim, x0, &errorea) == OK)
 
-		TRY(7, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
+		TRY(6, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
 
 		// x == b
 		// x0 == c
-	}
+	} while (errorea > tol);
 
 	return OK;
 
@@ -155,28 +157,23 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 				break;
 			case 3:
 				fprintf(stderr,
-						"[x] Hasierako puntuaren norma kalkulatzean errore "
-						"kritiko bat egon da.\n");
-				break;
-			case 4:
-				fprintf(stderr,
 						"[x] Ezin izan da JX * x = FX ekuazio sistema "
 						"linealaren LU deskonposaketa egin.\n");
 				break;
-			case 5:
+			case 4:
 				fprintf(stderr,
 						"[x] Ezin izan da JX * x = FX ekuazio sistema lineala "
-						"ebatzi LU deskonposaketa erabiliz\n");
+						"ebatzi LU deskonposaketa erabiliz.\n");
+				break;
+			case 5:
+				fprintf(stderr,
+						"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
+						"norma kalkulatzean errore kritiko bat egon da.\n");
 				break;
 			case 6:
 				fprintf(stderr,
-						"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
-						"norma kalkulatzean errore kritiko bat egon da.");
-				break;
-			case 7:
-				fprintf(stderr,
 						"[x] Bektoreen arteko kenketa egitean errore kritiko "
-						"bat egon da");
+						"bat egon da.");
 				break;
 		}
 
