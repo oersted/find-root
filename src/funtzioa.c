@@ -7,7 +7,3 @@ void f(int dim, double* x, double* fx) {
 void jakobiarra(int dim, double* x, double* jx) {
 	jx[0] = 2 * x[0];
 }
-
-double norma(int dim, double* x) {
-	return 0;
-}

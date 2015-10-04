@@ -5,7 +5,8 @@
 #include <gsl/gsl_blas.h>
 
 #include "datuak_lortu.h"
-#include "funtzioak.h"
+#include "funtzioa.h"
+#include "norma.h"
 
 // Exception system configuration
 #define ERR_T int
