@@ -1,13 +1,14 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
 #include <float.h>
 #include <time.h>
+#include <errno.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_errno.h>
 
-#include "datuak_lortu.h"
 #include "funtzioa.h"
 #include "norma.h"
 
@@ -16,6 +17,10 @@
 #define ERR_V ERRNO
 #define OK 0
 #include "exceptions.h"
+
+// Input
+#define MAX_BUF 256
+#define MATCH(line, str) !strncmp(line, str, strlen(str))
 
 // User options
 #define DEFAULT_TOLERANCE 1.0e-12
@@ -66,30 +71,6 @@ void handler(const char* reason, const char* file, int line, int gsl_errno) {
 	}
 
 	fprintf(stderr, "%s\n", reason);
-}
-
-void output_vector(int dim, double* x) {
-	int i;
-
-	printf("(");
-	printf("%.*g", DBL_DIG, x[0]);
-	for (i = 1; i < dim; ++i)
-		printf(", %.*g", DBL_DIG, x[i]);
-	printf(")\n");
-}
-
-void output_result(int dim, double* result, struct additional_data* data) {
-	printf("Erroa: ");
-	output_vector(dim, result);
-
-	printf("Errore maximoa: %.*g\n", DBL_DIG, data->max_error);
-
-	printf("F(Erroa): ");
-	output_vector(dim, data->fx);
-
-	printf("Iterazio kopurua: %u\n", data->iter_count);
-
-	printf("Denbora: %.*g seg\n", DBL_DIG, data->delta_t);
 }
 
 ERR_T norm(int dim, double* x, double* n, struct options* options) {
@@ -276,6 +257,120 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 	)
 }
 
+void output_vector(int dim, double* x) {
+	int i;
+
+	printf("(");
+	printf("%.*g", DBL_DIG, x[0]);
+	for (i = 1; i < dim; ++i)
+		printf(", %.*g", DBL_DIG, x[i]);
+	printf(")\n");
+}
+
+void output_result(int dim, double* result, struct additional_data* data) {
+	printf("Erroa: ");
+	output_vector(dim, result);
+
+	printf("Errore maximoa: %.*g\n", DBL_DIG, data->max_error);
+
+	printf("F(Erroa): ");
+	output_vector(dim, data->fx);
+
+	printf("Iterazio kopurua: %u\n", data->iter_count);
+
+	printf("Denbora: %.*g seg\n", DBL_DIG, data->delta_t);
+}
+
+ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
+	FILE* f;
+	char line[MAX_BUF];
+	int count = 0;
+
+	TRY(1, (f = fopen(path, "r")) != NULL)
+
+	// Read dimension
+	*dim = 0;
+	while (fgets(line, MAX_BUF, f) != NULL) {
+		if (line[0] != '#' && (line[0] != '\0')) {
+			if (MATCH(line, "dimentsioa")) {
+				TRY(2, sscanf(line, "dimentsioa %d", dim) == 1)
+				TRY(3, *dim > 0)
+				break;
+			}
+		}
+	}
+
+	TRY(4, *dim != 0)
+
+	TRY(5, (*x0 = (double*) malloc((*dim) * sizeof(double))) != NULL)
+
+	// Read x0 and optional parameters
+	while (fgets(line, MAX_BUF, f) != NULL) {
+		if (line[0] != '#' && (line[0] != '\0')) {
+			if(MATCH(line, "tolerantzia")) {
+				TRY(6,
+					sscanf(line, "tolerantzia %lf", &(options->tolerance)) == 1)
+				TRY(7, options->tolerance > 0.0)
+			} else {
+				TRY(8, count < *dim)
+				TRY(9, sscanf(line, "%lf", (*x0) + count) == 1)
+				++count;
+			}
+		}
+	}
+
+	TRY(10, count == *dim)
+
+
+	EXCEPT(
+		case 1:
+			fprintf(stdout,
+					"[x] Ezin izan da konfigurazio fitxategia irakurri\n");
+			break;
+		case 2:
+			fprintf(stdout,
+					"[x] Sintaxi desegokia dimentsioa emateko lerroan\n");
+			break;
+		case 3:
+			fprintf(stdout,
+					"[x] Dimentsioak zero baina handiagoa izan behar du\n");
+			break;
+		case 4:
+			fprintf(stdout, "[x] Ez da aurkitu dimentsioa.");
+			break;
+		case 5:
+			fprintf(stdout,
+					"[x] Ezin izan da X0-rentzat memoria erreserbatu\n.");
+			break;
+		case 6:
+			fprintf(stdout,
+					"[x] Sintaxi desegokia tolerantzia emateko lerroan\n.");
+			break;
+		case 7:
+			fprintf(stdout,
+					"[x] Tolerantziak zero baina handiagoa izan behar du.\n");
+			break;
+		case 8:
+			fprintf(stdout,
+					"[x] X0-ren elementu kopurura dimentsioa baina handiagoa "
+					"da.\n");
+			break;
+		case 9:
+			fprintf(stdout,
+					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
+					"batean.\n");
+			break;
+		case 10:
+			fprintf(stdout,
+					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
+			break;
+	)
+
+	FINALLY(
+		fclose(f);
+	)
+}
+
 int main(int argc, char** argv) {
 	int dim;
 	char* path;
@@ -302,7 +397,7 @@ int main(int argc, char** argv) {
 	options.jx_reuse = DEFAULT_JX_REUSE;
 
 	// Get conf file data
-	TRY(2, datuak_lortu(path, &dim, &x0, &(options.tolerance)) > 0)
+	TRY(2, input_data(path, &dim, &x0, &options) == OK)
 
 	// Find root
 	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
