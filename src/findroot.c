@@ -49,52 +49,87 @@ struct additional_data {
 	double delta_t;
 };
 
-void handler(const char* reason, const char* file, int line, int gsl_errno) {
-	fprintf(stderr, "[x] ");
-
-	switch(gsl_errno) {
-		case GSL_EDOM:
-			fprintf(stderr, "GSL DOMAIN ERROR: ");
-			break;
-		case GSL_ERANGE:
-			fprintf(stderr, "GSL RANGE ERROR: ");
-			break;
-		case GSL_ENOMEM:
-			fprintf(stderr, "GSL NO MEMORY AVAILABLE: ");
-			break;
-		case GSL_EINVAL:
-			fprintf(stderr, "GSL INVALID ARGUMENT: ");
-			break;
-		default:
-			fprintf(stderr, "GSL ERROR: ");
-			break;
-	}
-
-	fprintf(stderr, "%s\n", reason);
-}
-
-ERR_T norm(int dim, double* x, double* n, struct options* options) {
-	if (options->user_norm) {
-		norma(dim, x, n);
-	} else {
-		gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
-		TRY(1, (*n = gsl_blas_dnrm2(&x_gsl.vector)) >= 0.0)
-	}
-
-	EXCEPT(
-		case 1:
-			fprintf(stderr, "[x] Ezin izan da norma kalkulatu, posible da "
-					"bektorea handiegia izatea.\n");
-			break;
-	)
-
-	FINALLY()
-}
+// Function declarations
 
 /*
  * The result will be stored in x and x0 will contain the difference between x
  * and the result of the previous iteration.
  */
+ERR_T findroot(int dim, double* x0, double* x, struct options* options,
+		struct additional_data* data);
+
+ERR_T norm(int dim, double* x, double* n, struct options* options);
+
+ERR_T input_data(char* path, int* dim, double** x0, struct options* options);
+
+void output_result(int dim, double* result, struct additional_data* data);
+
+void output_vector(int dim, double* x);
+
+void handler(const char* reason, const char* file, int line, int gsl_errno);
+
+// Program
+
+int main(int argc, char** argv) {
+	int dim;
+	char* path;
+	double* x;
+	double* x0;
+	struct options options;
+	struct additional_data additional_data;
+
+	// Initialize pointers with to free safely
+	x = NULL;
+	x0 = NULL;
+
+	// Save the conf file path
+	TRY(1, argc == 2)
+	path = argv[1];
+
+	// Initialize options with default data
+	options.tolerance = DEFAULT_TOLERANCE;
+	options.rel_tol = DEFAULT_REL_TOL;
+	options.max_zero_dist = DEFAULT_MAX_ZERO_DIST;
+	options.user_norm = DEFAULT_USER_NORM;
+	options.max_iter = DEFAULT_MAX_ITER;
+	options.max_div_iter = DEFAULT_MAX_DIV_ITER;
+	options.jx_reuse = DEFAULT_JX_REUSE;
+
+	// Get conf file data
+	TRY(2, input_data(path, &dim, &x0, &options) == OK)
+
+	// Find root
+	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
+	TRY(4, findroot(dim, x0, x, &options, &additional_data) == OK)
+
+	output_result(dim, x, &additional_data);
+
+	RETURN(0)
+
+	EXCEPT(
+		case 1:
+			printf("Usage: findroot path\n");
+			break;
+		case 2:
+			fprintf(stderr,
+					"[x] Ezin izan da konfigurazio fitxategia ondo "
+					"irakurri.\n");
+			break;
+		case 3:
+			fprintf(stderr,
+					"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+			break;
+		case 4:
+			fprintf(stderr, "[x] Ezin izan da emaitza kalkulatu.\n");
+			break;
+	)
+
+	FINALLY(
+		free(x);
+		free(x0);
+	)
+}
+
 ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		struct additional_data* data) {
 	int s;
@@ -254,28 +289,22 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 	)
 }
 
-void output_vector(int dim, double* x) {
-	int i;
+ERR_T norm(int dim, double* x, double* n, struct options* options) {
+	if (options->user_norm) {
+		norma(dim, x, n);
+	} else {
+		gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
+		TRY(1, (*n = gsl_blas_dnrm2(&x_gsl.vector)) >= 0.0)
+	}
 
-	printf("(");
-	printf("%.*g", DBL_DIG, x[0]);
-	for (i = 1; i < dim; ++i)
-		printf(", %.*g", DBL_DIG, x[i]);
-	printf(")\n");
-}
+	EXCEPT(
+		case 1:
+			fprintf(stderr, "[x] Ezin izan da norma kalkulatu, posible da "
+					"bektorea handiegia izatea.\n");
+			break;
+	)
 
-void output_result(int dim, double* result, struct additional_data* data) {
-	printf("Erroa: ");
-	output_vector(dim, result);
-
-	printf("Errore maximoa: %.*g\n", DBL_DIG, data->max_error);
-
-	printf("F(Erroa): ");
-	output_vector(dim, data->fx);
-
-	printf("Iterazio kopurua: %u\n", data->iter_count);
-
-	printf("Denbora: %.*g seg\n", DBL_DIG, data->delta_t);
+	FINALLY()
 }
 
 ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
@@ -416,62 +445,50 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 	)
 }
 
-int main(int argc, char** argv) {
-	int dim;
-	char* path;
-	double* x;
-	double* x0;
-	struct options options;
-	struct additional_data additional_data;
+void output_result(int dim, double* result, struct additional_data* data) {
+	printf("Erroa: ");
+	output_vector(dim, result);
 
-	// Initialize pointers with to free safely
-	x = NULL;
-	x0 = NULL;
+	printf("Errore maximoa: %.*g\n", DBL_DIG, data->max_error);
 
-	// Save the conf file path
-	TRY(1, argc == 2)
-	path = argv[1];
+	printf("F(Erroa): ");
+	output_vector(dim, data->fx);
 
-	// Initialize options with default data
-	options.tolerance = DEFAULT_TOLERANCE;
-	options.rel_tol = DEFAULT_REL_TOL;
-	options.max_zero_dist = DEFAULT_MAX_ZERO_DIST;
-	options.user_norm = DEFAULT_USER_NORM;
-	options.max_iter = DEFAULT_MAX_ITER;
-	options.max_div_iter = DEFAULT_MAX_DIV_ITER;
-	options.jx_reuse = DEFAULT_JX_REUSE;
+	printf("Iterazio kopurua: %u\n", data->iter_count);
 
-	// Get conf file data
-	TRY(2, input_data(path, &dim, &x0, &options) == OK)
+	printf("Denbora: %.*g seg\n", DBL_DIG, data->delta_t);
+}
 
-	// Find root
-	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
-	TRY(4, findroot(dim, x0, x, &options, &additional_data) == OK)
+void output_vector(int dim, double* x) {
+	int i;
 
-	output_result(dim, x, &additional_data);
+	printf("(");
+	printf("%.*g", DBL_DIG, x[0]);
+	for (i = 1; i < dim; ++i)
+		printf(", %.*g", DBL_DIG, x[i]);
+	printf(")\n");
+}
 
-	RETURN(0)
+void handler(const char* reason, const char* file, int line, int gsl_errno) {
+	fprintf(stderr, "[x] ");
 
-	EXCEPT(
-		case 1:
-			printf("Usage: findroot path\n");
+	switch(gsl_errno) {
+		case GSL_EDOM:
+			fprintf(stderr, "GSL DOMAIN ERROR: ");
 			break;
-		case 2:
-			fprintf(stderr,
-					"[x] Ezin izan da konfigurazio fitxategia ondo "
-					"irakurri.\n");
+		case GSL_ERANGE:
+			fprintf(stderr, "GSL RANGE ERROR: ");
 			break;
-		case 3:
-			fprintf(stderr,
-					"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+		case GSL_ENOMEM:
+			fprintf(stderr, "GSL NO MEMORY AVAILABLE: ");
 			break;
-		case 4:
-			fprintf(stderr, "[x] Ezin izan da emaitza kalkulatu.\n");
+		case GSL_EINVAL:
+			fprintf(stderr, "GSL INVALID ARGUMENT: ");
 			break;
-	)
+		default:
+			fprintf(stderr, "GSL ERROR: ");
+			break;
+	}
 
-	FINALLY(
-		free(x);
-		free(x0);
-	)
+	fprintf(stderr, "%s\n", reason);
 }
