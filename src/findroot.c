@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <float.h>
+#include <time.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_errno.h>
@@ -31,6 +32,7 @@ struct options {
 struct additional_data {
 	double* fx;
 	unsigned int iter_count;
+	double delta_t;
 };
 
 void handler(const char* reason, const char* file, int line, int gsl_errno) {
@@ -79,6 +81,7 @@ void output_result(int dim, double* result, double* max_error,
 	output_vector(dim, data->fx);
 
 	printf("Iterazio kopurua: %u\n", data->iter_count);
+	printf("Denbora: %.*g seg", DBL_DIG, data->delta_t);
 }
 
 ERR_T norm(int dim, double* x, double* n, struct options* options) {
@@ -109,6 +112,9 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 	double errorea;
 	double* fx;
 	double* jx;
+	clock_t begin, end;
+
+	begin = clock();
 
 	// INITIALIZATION
 
@@ -174,8 +180,11 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		++iter_count;
 	} while (errorea > options->tolerance && iter_count < options->max_iter);
 
+	end = clock();
+
 	data->fx = fx;
 	data->iter_count = iter_count;
+	data->delta_t = (double) (end - begin) / (double) CLOCKS_PER_SEC;
 
 	EXCEPT(
 		case 1:
