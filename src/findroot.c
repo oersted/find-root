@@ -320,15 +320,20 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 				TRY(9, options->max_zero_dist > 0.0)
 			} else if (MATCH(line, "norma_alternatiboa")) {
 				options->user_norm = 1;
+			} else if (MATCH(line, "iterazio_maximoa")) {
+				TRY(10,
+					sscanf(line, "iterazio_maximoa %u",
+							&(options->max_iter)) == 1)
+				TRY(11, options->max_iter != 0)
 			} else {
-				TRY(10, count < *dim)
-				TRY(11, sscanf(line, "%lf", (*x0) + count) == 1)
+				TRY(12, count < *dim)
+				TRY(13, sscanf(line, "%lf", (*x0) + count) == 1)
 				++count;
 			}
 		}
 	}
 
-	TRY(12, count == *dim)
+	TRY(14, count == *dim)
 
 
 	EXCEPT(
@@ -371,15 +376,24 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			break;
 		case 10:
 			fprintf(stdout,
+					"[x] Sintaxi okerra iterazio kopuru maximoa emateko "
+					"lerroan.Kopuruak positiboa izan behar du.\n");
+			break;
+		case 11:
+			fprintf(stdout,
+					"[x] Iterazio kopuru maximoak ezin du zero izan.\n");
+			break;
+		case 12:
+			fprintf(stdout,
 					"[x] X0-ren elementu kopurura dimentsioa baina handiagoa "
 					"da.\n");
 			break;
-		case 11:
+		case 13:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
 					"batean.\n");
 			break;
-		case 12:
+		case 14:
 			fprintf(stdout,
 					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
 			break;
