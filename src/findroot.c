@@ -17,14 +17,16 @@
 
 // User option defaults
 #define DEFAULT_TOLERANCE 1.0e-12
-#define DEFAULT_HAVE_NORM 0
+#define DEFAULT_USER_NORM 0
 #define DEFAULT_MAX_ITER 10
 
 // User options
 
-double TOLERANCE = DEFAULT_TOLERANCE;
-char HAVE_NORM = DEFAULT_HAVE_NORM;
-unsigned int MAX_ITER = DEFAULT_MAX_ITER;
+struct options {
+	double tolerance;
+	char user_norm;
+	unsigned int max_iter;
+};
 
 void handler(const char* reason, const char* file, int line, int gsl_errno) {
 	fprintf(stderr, "[x] ");
@@ -56,12 +58,12 @@ void output_result(int dim, double* x) {
 	printf("Emaitza: (");
 	printf("%f", x[0]);
 	for (i = 1; i < dim; ++i)
-		printf(", %f", x[i]);
+		printf(", %f", x[i]); //TODO More precision
 	printf(")\n");
 }
 
-ERR_T norm(int dim, double* x, double* n) {
-	if (HAVE_NORM) {
+ERR_T norm(int dim, double* x, double* n, struct options* options) {
+	if (options->user_norm) {
 		norma(dim, x, n);
 	} else {
 		gsl_vector_view x_gsl = gsl_vector_view_array(x, dim);
@@ -82,7 +84,7 @@ ERR_T norm(int dim, double* x, double* n) {
  * The result will be stored in x and x0 will contain the difference between x
  * and the result of the previous iteration.
  */
-ERR_T findroot(int dim, double* x0, double* x) {
+ERR_T findroot(int dim, double* x0, double* x, struct options* options) {
 	int iter_count, s;
 	double errorea;
 	double* fx;
@@ -150,7 +152,7 @@ ERR_T findroot(int dim, double* x0, double* x) {
 		// x0 == c
 
 		++iter_count;
-	} while (errorea > TOLERANCE && iter_count <= MAX_ITER);
+	} while (errorea > options->tolerance && iter_count <= options->max_iter);
 
 	EXCEPT(
 		case 1:
@@ -190,6 +192,7 @@ ERR_T findroot(int dim, double* x0, double* x) {
 int main(int argc, char** argv) {
 	int dim;
 	char* path;
+	struct options* options;
 	double* x;
 	double* x0;
 
@@ -201,12 +204,17 @@ int main(int argc, char** argv) {
 	TRY(1, argc == 2)
 	path = argv[1];
 
+	// Initialize options with default data
+	options->tolerance = DEFAULT_TOLERANCE;
+	options->user_norm = DEFAULT_USER_NORM;
+	options->max_iter = DEFAULT_MAX_ITER;
+
 	// Get conf file data
-	TRY(2, datuak_lortu(path, &dim, &x0, &TOLERANCE) > 0)
+	TRY(2, datuak_lortu(path, &dim, &x0, &(options->tolerance)) > 0)
 
 	// Find root
 	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
-	TRY(4, findroot(dim, x0, x) == OK)
+	TRY(4, findroot(dim, x0, x, options) == OK)
 
 	output_result(dim, x);
 
