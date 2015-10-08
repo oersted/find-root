@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
+#include <float.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_errno.h>
@@ -56,9 +57,9 @@ void output_result(int dim, double* x) {
 	int i;
 
 	printf("Emaitza: (");
-	printf("%f", x[0]);
+	printf("%.*g", DBL_DIG, x[0]);
 	for (i = 1; i < dim; ++i)
-		printf(", %f", x[i]); //TODO More precision
+		printf(", %.*g", DBL_DIG, x[i]);
 	printf(")\n");
 }
 
@@ -144,7 +145,7 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options) {
 		// x == a
 		// x0 == c
 
-		TRY(5, norm(dim, x0, &errorea) == OK)
+		TRY(5, norm(dim, x0, &errorea, options) == OK)
 
 		TRY(6, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
 
@@ -192,9 +193,9 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options) {
 int main(int argc, char** argv) {
 	int dim;
 	char* path;
-	struct options* options;
 	double* x;
 	double* x0;
+	struct options options;
 
 	// Initialize pointers with to free safely
 	x = NULL;
@@ -205,16 +206,16 @@ int main(int argc, char** argv) {
 	path = argv[1];
 
 	// Initialize options with default data
-	options->tolerance = DEFAULT_TOLERANCE;
-	options->user_norm = DEFAULT_USER_NORM;
-	options->max_iter = DEFAULT_MAX_ITER;
+	options.tolerance = DEFAULT_TOLERANCE;
+	options.user_norm = DEFAULT_USER_NORM;
+	options.max_iter = DEFAULT_MAX_ITER;
 
 	// Get conf file data
-	TRY(2, datuak_lortu(path, &dim, &x0, &(options->tolerance)) > 0)
+	TRY(2, datuak_lortu(path, &dim, &x0, &(options.tolerance)) > 0)
 
 	// Find root
 	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
-	TRY(4, findroot(dim, x0, x, options) == OK)
+	TRY(4, findroot(dim, x0, x, &options) == OK)
 
 	output_result(dim, x);
 
