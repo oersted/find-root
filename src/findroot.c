@@ -61,18 +61,14 @@ ERR_T norm(int dim, double* x, double* n) {
 		TRY(1, (*n = gsl_blas_dnrm2(&x_gsl.vector)) >= 0.0)
 	}
 
-	return OK;
+	EXCEPT(
+		case 1:
+			fprintf(stderr, "[x] Ezin izan da norma kalkulatu, posible da "
+					"bektorea handiegia izatea.\n");
+			break;
+	)
 
-	EXCEPT: {
-		switch(ERR_V) {
-			case 1:
-				fprintf(stderr, "[x] Ezin izan da norma kalkulatu, posible da "
-						"bektorea handiegia izatea.\n");
-				break;
-		}
-
-		return ERR_V;
-	}
+	FINALLY()
 }
 
 /*
@@ -146,42 +142,39 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 		// x0 == c
 	} while (errorea > tol);
 
-	return OK;
+	EXCEPT(
+		case 1:
+		case 2:
+			fprintf(stderr,
+					"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+			break;
+		case 3:
+			fprintf(stderr,
+					"[x] Ezin izan da JX * x = FX ekuazio sistema "
+					"linealaren LU deskonposaketa egin.\n");
+			break;
+		case 4:
+			fprintf(stderr,
+					"[x] Ezin izan da JX * x = FX ekuazio sistema lineala "
+					"ebatzi LU deskonposaketa erabiliz.\n");
+			break;
+		case 5:
+			fprintf(stderr,
+					"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
+					"norma kalkulatzean errore kritiko bat egon da.\n");
+			break;
+		case 6:
+			fprintf(stderr,
+					"[x] Bektoreen arteko kenketa egitean errore kritiko "
+					"bat egon da.");
+			break;
+	)
 
-	EXCEPT: {
-		switch(ERR_V) {
-			case 1:
-			case 2:
-				fprintf(stderr,
-						"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
-				break;
-			case 3:
-				fprintf(stderr,
-						"[x] Ezin izan da JX * x = FX ekuazio sistema "
-						"linealaren LU deskonposaketa egin.\n");
-				break;
-			case 4:
-				fprintf(stderr,
-						"[x] Ezin izan da JX * x = FX ekuazio sistema lineala "
-						"ebatzi LU deskonposaketa erabiliz.\n");
-				break;
-			case 5:
-				fprintf(stderr,
-						"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
-						"norma kalkulatzean errore kritiko bat egon da.\n");
-				break;
-			case 6:
-				fprintf(stderr,
-						"[x] Bektoreen arteko kenketa egitean errore kritiko "
-						"bat egon da.");
-				break;
-		}
-
+	FINALLY(
 		free(fx);
 		free(jx);
-
-		return ERR_V;
-	}
+		gsl_permutation_free(p);
+	)
 }
 
 int main(int argc, char** argv) {
@@ -208,30 +201,28 @@ int main(int argc, char** argv) {
 
 	output_result(dim, x);
 
-	return 0;
+	RETURN(0)
 
-	EXCEPT: {
-		switch(ERR_V) {
-			case 1:
-				printf("Usage: findroot path\n");
-				break;
-			case 2:
-				fprintf(stderr,
-						"[x] Ezin izan da konfigurazio fitxategia ondo "
-						"irakurri.\n");
-				break;
-			case 3:
-				fprintf(stderr,
-						"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
-				break;
-			case 4:
-				fprintf(stderr, "[x] Ezin izan da emaitza kalkulatu.\n");
-				break;
-		}
+	EXCEPT(
+		case 1:
+			printf("Usage: findroot path\n");
+			break;
+		case 2:
+			fprintf(stderr,
+					"[x] Ezin izan da konfigurazio fitxategia ondo "
+					"irakurri.\n");
+			break;
+		case 3:
+			fprintf(stderr,
+					"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+			break;
+		case 4:
+			fprintf(stderr, "[x] Ezin izan da emaitza kalkulatu.\n");
+			break;
+	)
 
+	FINALLY(
 		free(x);
 		free(x0);
-
-		return ERR_V;
-	}
+	)
 }
