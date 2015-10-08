@@ -29,7 +29,7 @@
 #define DEFAULT_USER_NORM 0
 #define DEFAULT_MAX_ITER 25
 #define DEFAULT_MAX_DIV_ITER 10
-#define DEFAULT_JX_REUSE 0
+#define DEFAULT_JX_REUSE 5
 
 struct options {
 	double tolerance;
@@ -150,13 +150,10 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 
 	do {
 		f(dim, x, fx);
-		jakobiarra(dim, x, jx);
-
-		// fx == FX
-		// jx == JX
 
 		// Reusage of the Jacobian matrix
 		if (jx_reuse_count == options->jx_reuse) {
+			jakobiarra(dim, x, jx);
 			TRY(3, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
 			jx_reuse_count = 0;
 		} else {
