@@ -318,6 +318,8 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 					sscanf(line, "max_zero_distantzia %lf",
 							&(options->max_zero_dist)) == 1)
 				TRY(9, options->max_zero_dist > 0.0)
+			} else if (MATCH(line, "norma_alternatiboa")) {
+				options->user_norm = 1;
 			} else {
 				TRY(10, count < *dim)
 				TRY(11, sscanf(line, "%lf", (*x0) + count) == 1)
