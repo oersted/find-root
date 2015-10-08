@@ -21,6 +21,7 @@
 
 // User options
 
+double TOLERANCE = DEFAULT_TOL;
 char HAVE_NORM = DEFAULT_HAVE_NORM;
 
 void handler(const char* reason, const char* file, int line, int gsl_errno) {
@@ -79,7 +80,7 @@ ERR_T norm(int dim, double* x, double* n) {
  * The result will be stored in x and x0 will contain the difference between x
  * and the result of the previous iteration.
  */
-ERR_T findroot(int dim, double tol, double* x0, double* x) {
+ERR_T findroot(int dim, double* x0, double* x) {
 	int s;
 	double errorea;
 	double* fx;
@@ -144,7 +145,7 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 
 		// x == b
 		// x0 == c
-	} while (errorea > tol);
+	} while (errorea > TOLERANCE);
 
 	EXCEPT(
 		case 1:
@@ -184,7 +185,6 @@ ERR_T findroot(int dim, double tol, double* x0, double* x) {
 int main(int argc, char** argv) {
 	int dim;
 	char* path;
-	double tol;
 	double* x;
 	double* x0;
 
@@ -197,11 +197,11 @@ int main(int argc, char** argv) {
 	path = argv[1];
 
 	// Get conf file data
-	TRY(2, datuak_lortu(path, &dim, &x0, &tol) > 0)
+	TRY(2, datuak_lortu(path, &dim, &x0, &TOLERANCE) > 0)
 
 	// Find root
 	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
-	TRY(4, findroot(dim, tol, x0, x) == OK)
+	TRY(4, findroot(dim, x0, x) == OK)
 
 	output_result(dim, x);
 
