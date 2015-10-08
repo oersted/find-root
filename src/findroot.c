@@ -321,22 +321,24 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			} else if (MATCH(line, "norma_alternatiboa")) {
 				options->user_norm = 1;
 			} else if (MATCH(line, "iterazio_maximoa")) {
-				TRY(10,
-					sscanf(line, "iterazio_maximoa %u",
+				TRY(10,	sscanf(line, "iterazio_maximoa %u",
 							&(options->max_iter)) == 1)
 				TRY(11, options->max_iter != 0)
 			} else if (MATCH(line, "dibergentzia_iterazio_maximoa")) {
 				TRY(12, sscanf(line, "dibergentzia_iterazio_maximoa %u",
 						&(options->max_div_iter)) == 1)
+			} else if (MATCH(line, "jakobiar_berrerabilpena")) {
+				TRY(13, sscanf(line, "jakobiar_berrerabilpena %u",
+							&(options->jx_reuse)) == 1)
 			} else {
-				TRY(13, count < *dim)
-				TRY(14, sscanf(line, "%lf", (*x0) + count) == 1)
+				TRY(14, count < *dim)
+				TRY(15, sscanf(line, "%lf", (*x0) + count) == 1)
 				++count;
 			}
 		}
 	}
 
-	TRY(15, count == *dim)
+	TRY(16, count == *dim)
 
 
 	EXCEPT(
@@ -393,15 +395,20 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			break;
 		case 13:
 			fprintf(stdout,
+					"[x] Sintaxi okerra jakobiarraren berrerabilpen ratioa "
+					"emateko lerroan. Ratioak ezin du negatiboa izan.\n");
+			break;
+		case 14:
+			fprintf(stdout,
 					"[x] X0-ren elementu kopurura dimentsioa baina handiagoa "
 					"da.\n");
 			break;
-		case 14:
+		case 15:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
 					"batean.\n");
 			break;
-		case 15:
+		case 16:
 			fprintf(stdout,
 					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
 			break;

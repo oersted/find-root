@@ -5,3 +5,4 @@ tolerantzia 1.0e-7
 max_zero_distantzia 1.0e-7
 iterazio_maximoa 10
 dibergentzia_iterazio_maximoa 5
+jakobiar_berrerabilpena 2
