@@ -22,12 +22,14 @@
 #define DEFAULT_USER_NORM 0
 #define DEFAULT_MAX_ITER 25
 #define DEFAULT_MAX_DIV_ITER 10
+#define DEFAULT_JX_REUSE 1
 
 struct options {
 	double tolerance;
 	char user_norm;
-	int max_iter;
-	int max_div_iter;
+	unsigned int max_iter;
+	unsigned int max_div_iter;
+	unsigned int jx_reuse;
 };
 
 // Result
@@ -110,7 +112,8 @@ ERR_T norm(int dim, double* x, double* n, struct options* options) {
  */
 ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		struct additional_data* data) {
-	int s, iter_count, iter_div_count;
+	int s;
+	unsigned int iter_count, iter_div_count, jx_reuse_count;
 	double max_err, max_err_prev;
 	double* fx;
 	double* jx;
@@ -158,6 +161,7 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 	iter_count = 0;
 	iter_div_count = 0;
 	max_err_prev = DBL_MAX;
+	jx_reuse_count = options->jx_reuse;
 
 	do {
 		f(dim, x, fx);
@@ -166,7 +170,13 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		// fx == FX
 		// jx == JX
 
-		TRY(3, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
+		if (jx_reuse_count == options->jx_reuse) {
+			TRY(3, gsl_linalg_LU_decomp(&jx_gsl.matrix, p, &s) == OK)
+			jx_reuse_count = 0;
+		} else {
+			++jx_reuse_count;
+		}
+
 		TRY(4,
 			gsl_linalg_LU_solve(
 				&jx_gsl.matrix, p, &fx_gsl.vector, &x0_gsl.vector) == OK
@@ -194,9 +204,9 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		}
 		max_err_prev = max_err;
 
-		printf("%d\n", iter_div_count);
-
-	} while (max_err > options->tolerance && iter_count < options->max_iter);
+	} while (max_err > options->tolerance &&
+			iter_count < options->max_iter &&
+			iter_div_count < options->max_div_iter);
 
 	end = clock();
 
@@ -260,6 +270,8 @@ int main(int argc, char** argv) {
 	options.tolerance = DEFAULT_TOLERANCE;
 	options.user_norm = DEFAULT_USER_NORM;
 	options.max_iter = DEFAULT_MAX_ITER;
+	options.max_div_iter = DEFAULT_MAX_DIV_ITER;
+	options.jx_reuse = DEFAULT_JX_REUSE;
 
 	// Get conf file data
 	TRY(2, datuak_lortu(path, &dim, &x0, &(options.tolerance)) > 0)
