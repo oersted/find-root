@@ -2,3 +2,4 @@ dimentsioa 2
 -0.5
 -0.5
 tolerantzia 1.0e-7
+max_zero_distantzia 1.0e-7

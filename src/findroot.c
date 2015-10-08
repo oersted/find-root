@@ -307,19 +307,26 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 	// Read x0 and optional parameters
 	while (fgets(line, MAX_BUF, f) != NULL) {
 		if (line[0] != '#' && (line[0] != '\0')) {
-			if(MATCH(line, "tolerantzia")) {
+			if (MATCH(line, "tolerantzia")) {
 				TRY(6,
 					sscanf(line, "tolerantzia %lf", &(options->tolerance)) == 1)
 				TRY(7, options->tolerance > 0.0)
+			} else if (MATCH(line, "erlatiboa")) {
+				options->rel_tol = 1;
+			} else if (MATCH(line, "max_zero_distantzia")) {
+				TRY(8,
+					sscanf(line, "max_zero_distantzia %lf",
+							&(options->max_zero_dist)) == 1)
+				TRY(9, options->max_zero_dist > 0.0)
 			} else {
-				TRY(8, count < *dim)
-				TRY(9, sscanf(line, "%lf", (*x0) + count) == 1)
+				TRY(10, count < *dim)
+				TRY(11, sscanf(line, "%lf", (*x0) + count) == 1)
 				++count;
 			}
 		}
 	}
 
-	TRY(10, count == *dim)
+	TRY(12, count == *dim)
 
 
 	EXCEPT(
@@ -352,15 +359,25 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			break;
 		case 8:
 			fprintf(stdout,
+					"[x] Sintaxi okerra zerotik distantzia maximoa emateko "
+					"lerroan.\n");
+			break;
+		case 9:
+			fprintf(stdout,
+					"[x] Zerotik distantzia maximoak zero baina handiagoa izan "
+					"behar du.\n");
+			break;
+		case 10:
+			fprintf(stdout,
 					"[x] X0-ren elementu kopurura dimentsioa baina handiagoa "
 					"da.\n");
 			break;
-		case 9:
+		case 11:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
 					"batean.\n");
 			break;
-		case 10:
+		case 12:
 			fprintf(stdout,
 					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
 			break;
