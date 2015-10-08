@@ -15,9 +15,13 @@
 #define OK 0
 #include "exceptions.h"
 
+// User option defaults
+#define DEFAULT_TOL 1.0e-12
+#define DEFAULT_HAVE_NORM 0
+
 // User options
 
-char HAVE_NORM = 0;
+char HAVE_NORM = DEFAULT_HAVE_NORM;
 
 void handler(const char* reason, const char* file, int line, int gsl_errno) {
 	fprintf(stderr, "[x] ");
