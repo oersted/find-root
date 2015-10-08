@@ -325,15 +325,18 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 					sscanf(line, "iterazio_maximoa %u",
 							&(options->max_iter)) == 1)
 				TRY(11, options->max_iter != 0)
+			} else if (MATCH(line, "dibergentzia_iterazio_maximoa")) {
+				TRY(12, sscanf(line, "dibergentzia_iterazio_maximoa %u",
+						&(options->max_div_iter)) == 1)
 			} else {
-				TRY(12, count < *dim)
-				TRY(13, sscanf(line, "%lf", (*x0) + count) == 1)
+				TRY(13, count < *dim)
+				TRY(14, sscanf(line, "%lf", (*x0) + count) == 1)
 				++count;
 			}
 		}
 	}
 
-	TRY(14, count == *dim)
+	TRY(15, count == *dim)
 
 
 	EXCEPT(
@@ -377,7 +380,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 		case 10:
 			fprintf(stdout,
 					"[x] Sintaxi okerra iterazio kopuru maximoa emateko "
-					"lerroan.Kopuruak positiboa izan behar du.\n");
+					"lerroan. Kopuruak ezin du negatiboa izan.\n");
 			break;
 		case 11:
 			fprintf(stdout,
@@ -385,15 +388,20 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			break;
 		case 12:
 			fprintf(stdout,
+					"[x] Sintaxi okerra iterazio dibergente kopuru maximoa "
+					"emateko lerroan. Kopuruak ezin du negatiboa izan.\n");
+			break;
+		case 13:
+			fprintf(stdout,
 					"[x] X0-ren elementu kopurura dimentsioa baina handiagoa "
 					"da.\n");
 			break;
-		case 13:
+		case 14:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
 					"batean.\n");
 			break;
-		case 14:
+		case 15:
 			fprintf(stdout,
 					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
 			break;
