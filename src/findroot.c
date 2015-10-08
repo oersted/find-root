@@ -16,13 +16,15 @@
 #include "exceptions.h"
 
 // User option defaults
-#define DEFAULT_TOL 1.0e-12
+#define DEFAULT_TOLERANCE 1.0e-12
 #define DEFAULT_HAVE_NORM 0
+#define DEFAULT_MAX_ITER 10
 
 // User options
 
-double TOLERANCE = DEFAULT_TOL;
+double TOLERANCE = DEFAULT_TOLERANCE;
 char HAVE_NORM = DEFAULT_HAVE_NORM;
+unsigned int MAX_ITER = DEFAULT_MAX_ITER;
 
 void handler(const char* reason, const char* file, int line, int gsl_errno) {
 	fprintf(stderr, "[x] ");
@@ -81,7 +83,7 @@ ERR_T norm(int dim, double* x, double* n) {
  * and the result of the previous iteration.
  */
 ERR_T findroot(int dim, double* x0, double* x) {
-	int s;
+	int iter_count, s;
 	double errorea;
 	double* fx;
 	double* jx;
@@ -123,6 +125,7 @@ ERR_T findroot(int dim, double* x0, double* x) {
 	// x == a
 	// x0 == a
 
+	iter_count = 0;
 	do {
 		f(dim, x, fx);
 		jakobiarra(dim, x, jx);
@@ -145,7 +148,9 @@ ERR_T findroot(int dim, double* x0, double* x) {
 
 		// x == b
 		// x0 == c
-	} while (errorea > TOLERANCE);
+
+		++iter_count;
+	} while (errorea > TOLERANCE && iter_count <= MAX_ITER);
 
 	EXCEPT(
 		case 1:
