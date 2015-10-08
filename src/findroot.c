@@ -16,17 +16,21 @@
 #define OK 0
 #include "exceptions.h"
 
-// User option defaults
+// User options
 #define DEFAULT_TOLERANCE 1.0e-12
 #define DEFAULT_USER_NORM 0
-#define DEFAULT_MAX_ITER 10
-
-// User options
+#define DEFAULT_MAX_ITER 15
 
 struct options {
 	double tolerance;
 	char user_norm;
 	unsigned int max_iter;
+};
+
+// Result
+struct additional_data {
+	double* fx;
+	unsigned int iter_count;
 };
 
 void handler(const char* reason, const char* file, int line, int gsl_errno) {
@@ -53,14 +57,28 @@ void handler(const char* reason, const char* file, int line, int gsl_errno) {
 	fprintf(stderr, "%s\n", reason);
 }
 
-void output_result(int dim, double* x) {
+void output_vector(int dim, double* x) {
 	int i;
 
-	printf("Emaitza: (");
+	printf("(");
 	printf("%.*g", DBL_DIG, x[0]);
 	for (i = 1; i < dim; ++i)
 		printf(", %.*g", DBL_DIG, x[i]);
 	printf(")\n");
+}
+
+void output_result(int dim, double* result, double* max_error,
+		struct additional_data* data) {
+	printf("Erroa: ");
+	output_vector(dim, result);
+
+	printf("Errore maximoa: ");
+	output_vector(dim, max_error);
+
+	printf("F(Erroa): ");
+	output_vector(dim, data->fx);
+
+	printf("Iterazio kopurua: %u\n", data->iter_count);
 }
 
 ERR_T norm(int dim, double* x, double* n, struct options* options) {
@@ -85,7 +103,8 @@ ERR_T norm(int dim, double* x, double* n, struct options* options) {
  * The result will be stored in x and x0 will contain the difference between x
  * and the result of the previous iteration.
  */
-ERR_T findroot(int dim, double* x0, double* x, struct options* options) {
+ERR_T findroot(int dim, double* x0, double* x, struct options* options,
+		struct additional_data* data) {
 	int iter_count, s;
 	double errorea;
 	double* fx;
@@ -153,7 +172,10 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options) {
 		// x0 == c
 
 		++iter_count;
-	} while (errorea > options->tolerance && iter_count <= options->max_iter);
+	} while (errorea > options->tolerance && iter_count < options->max_iter);
+
+	data->fx = fx;
+	data->iter_count = iter_count;
 
 	EXCEPT(
 		case 1:
@@ -196,6 +218,7 @@ int main(int argc, char** argv) {
 	double* x;
 	double* x0;
 	struct options options;
+	struct additional_data additional_data;
 
 	// Initialize pointers with to free safely
 	x = NULL;
@@ -215,9 +238,9 @@ int main(int argc, char** argv) {
 
 	// Find root
 	TRY(3, (x = (double*) malloc(dim * sizeof(double))) != NULL)
-	TRY(4, findroot(dim, x0, x, &options) == OK)
+	TRY(4, findroot(dim, x0, x, &options, &additional_data) == OK)
 
-	output_result(dim, x);
+	output_result(dim, x, x0, &additional_data);
 
 	RETURN(0)
 
