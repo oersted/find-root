@@ -20,6 +20,7 @@
 // User options
 #define DEFAULT_TOLERANCE 1.0e-12
 #define DEFAULT_REL_TOL 1
+#define DEFAULT_MAX_ZERO_DIST 1.0e-12
 #define DEFAULT_USER_NORM 0
 #define DEFAULT_MAX_ITER 25
 #define DEFAULT_MAX_DIV_ITER 10
@@ -28,6 +29,7 @@
 struct options {
 	double tolerance;
 	char rel_tol;
+	double max_zero_dist;
 	char user_norm;
 	unsigned int max_iter;
 	unsigned int max_div_iter;
@@ -116,7 +118,7 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		struct additional_data* data) {
 	int s;
 	unsigned int iter_count, iter_div_count, jx_reuse_count;
-	double max_err, max_err_prev, x_norm;
+	double max_err, max_err_prev, zero_dist;
 	double* fx;
 	double* jx;
 	clock_t begin, end;
@@ -194,9 +196,13 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 
 		// Relative error
 		if (options->rel_tol) {
-			TRY(7, norm(dim, x, &x_norm, options) == OK)
-			max_err /= x_norm;
+			// zero_dist is reused to save memory
+			TRY(7, norm(dim, x, &zero_dist, options) == OK)
+			max_err /= zero_dist;
 		}
+
+		// Zero dist
+		TRY(8, norm(dim, fx, &zero_dist, options) == OK)
 
 		// x == b
 		// x0 == c
@@ -213,7 +219,8 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		}
 		max_err_prev = max_err;
 
-	} while (max_err > options->tolerance &&
+	} while ((max_err > options->tolerance ||
+			zero_dist > options->max_zero_dist) &&
 			iter_count < options->max_iter &&
 			iter_div_count < options->max_div_iter);
 
@@ -255,6 +262,11 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 					"[x] x-ren norma kalkulatzean errore kritiko bat egon "
 					"da.\n");
 			break;
+		case 8:
+			fprintf(stderr,
+					"[x] f(x)-ren norma kalkulatzean errore kritiko bat egon "
+					"da.\n");
+			break;
 	)
 
 	FINALLY(
@@ -283,6 +295,7 @@ int main(int argc, char** argv) {
 	// Initialize options with default data
 	options.tolerance = DEFAULT_TOLERANCE;
 	options.rel_tol = DEFAULT_REL_TOL;
+	options.max_zero_dist = DEFAULT_MAX_ZERO_DIST;
 	options.user_norm = DEFAULT_USER_NORM;
 	options.max_iter = DEFAULT_MAX_ITER;
 	options.max_div_iter = DEFAULT_MAX_DIV_ITER;
