@@ -423,12 +423,12 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 		case 2:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia dimentsioa emateko lerroan\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 3:
 			fprintf(stdout,
 					"[x] Dimentsioak zero baina handiagoa izan behar du.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 4:
 			fprintf(stdout, "[x] Ez da aurkitu dimentsioa.\n");
@@ -436,66 +436,66 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 		case 5:
 			fprintf(stdout,
 					"[x] Ezin izan da X0-rentzat memoria erreserbatu\n.");
-			printf("[?] MEMORIA KOPURUA: %lu\n", (*dim) * sizeof(double));
+			printf("[?] MEMORIA KOPURUA: %lu", (*dim) * sizeof(double));
 			break;
 		case 6:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia tolerantzia emateko lerroan\n.");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 7:
 			fprintf(stdout,
 					"[x] Tolerantziak zero baina handiagoa izan behar du.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 8:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia tolerantzia erlatiboa aukeratzeko "
 					"lerroan. Aukera honek 'bai' eta 'ez' balioak hartu "
 					"ditzake soilik.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 9:
 			fprintf(stdout,
 					"[x] Sintaxi okerra zerotik distantzia maximoa emateko "
 					"lerroan.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 10:
 			fprintf(stdout,
 					"[x] Zerotik distantzia maximoak zero baina handiagoa izan "
 					"behar du.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 11:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia ordezko norma aukeratzeko "
 					"lerroan. Aukera honek 'bai' eta 'ez' balioak hartu "
 					"ditzake soilik.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 12:
 			fprintf(stdout,
 					"[x] Sintaxi okerra iterazio kopuru maximoa emateko "
 					"lerroan. Kopuruak ezin du negatiboa izan.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 13:
 			fprintf(stdout,
 					"[x] Iterazio kopuru maximoak ezin du zero izan.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 14:
 			fprintf(stdout,
 					"[x] Sintaxi okerra iterazio dibergente kopuru maximoa "
 					"emateko lerroan. Kopuruak ezin du negatiboa izan.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 15:
 			fprintf(stdout,
 					"[x] Sintaxi okerra jakobiarraren berrerabilpen ratioa "
 					"emateko lerroan. Ratioak ezin du negatiboa izan.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 16:
 			fprintf(stdout,
@@ -507,7 +507,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			fprintf(stdout,
 					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
 					"batean.\n");
-			printf("[?] LERROA: %s\n", line);
+			printf("[?] LERROA: %s", line);
 			break;
 		case 18:
 			fprintf(stdout,
