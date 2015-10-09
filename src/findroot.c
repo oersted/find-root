@@ -459,7 +459,7 @@ void output_result(int dim, double* result, struct additional_data* data) {
 
 	printf("Errore maximoa: %.*g\n", DBL_DIG, data->max_error);
 
-	printf("F(Erroa): ");
+	printf("Erroaren irudia: ");
 	output_vector(dim, data->fx);
 
 	printf("Iterazio kopurua: %u\n", data->iter_count);
