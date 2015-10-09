@@ -505,8 +505,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			break;
 		case 17:
 			fprintf(stdout,
-					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
-					"batean.\n");
+					"[x] Sintaxi desegokia.\n");
 			printf("[?] LERROA: %s", line);
 			break;
 		case 18:
