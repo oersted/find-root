@@ -346,10 +346,10 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 					sscanf(line, "max_zero_distantzia %lf",
 							&(options->max_zero_dist)) == 1)
 				TRY(10, options->max_zero_dist > 0.0)
-			} else if (MATCH(line, "norma_alternatiboa")) {
-				if (MATCH(line, "norma_alternatiboa bai")) {
+			} else if (MATCH(line, "ordezko_norma")) {
+				if (MATCH(line, "ordezko_norma bai")) {
 					options->user_norm = 1;
-				} else if (MATCH(line, "norma_alternatiboa ez")) {
+				} else if (MATCH(line, "ordezko_norma ez")) {
 					options->user_norm = 0;
 				} else {
 					TRY(11, 0);
@@ -421,7 +421,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			break;
 		case 11:
 			fprintf(stdout,
-					"[x] Sintaxi desegokia norma alternatiboa aukeratzeko "
+					"[x] Sintaxi desegokia ordezko norma aukeratzeko "
 					"lerroan. Aukera honek 'bai' eta 'ez' balioak hartu "
 					"ditzake soilik.\n");
 			break;
