@@ -405,7 +405,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 				TRY(15, sscanf(line, "jakobiar_berrerabilpena %u",
 							&(options->jx_reuse)) == 1)
 			} else {
-				TRY(16, count < *dim)
+				TRY(16, count <= *dim)
 				TRY(17, sscanf(line, "%lf", (*x0) + count) == 1)
 				++count;
 			}
