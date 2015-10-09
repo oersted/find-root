@@ -191,7 +191,7 @@ Datu hauek soilik ematea nahikoa da programa era normalean erabiltzeko. Hala ere
 
 Hona hemen fitxategiak izan behar duen sintaxia.
 
-\begin{verbatim}
+\begin{lstlisting}
 dimentsioa n
 X1
 X2
@@ -199,7 +199,7 @@ X2
 Xn
 <aukera_izena> <balioa>
 ...
-\end{verbatim}
+\end{lstlisting}
 
 Lerro hutsak eta \emph{\#} karakterearekin hasten diren lerro guztiak ez dira kontuan hartuko. Gainera, inplementazioaren izaeragatik, sintaxi egokiko lerro baten ondoren edozer jartzea onartzen da, lerro berean dagoen bitartean. Programak bakarrik lerroaren balizko hasiera hartuko du kontuan. Dena den, gomendagarria da ezer gehigarririk ez jartzea.
 
@@ -622,6 +622,8 @@ Inplementazioa egin ondoren, azken pausua ondo dabilela ziurtatzea da. Proba guz
 
 Proba kasu pila diseinatu daitezke horrelako programa baterako, eta guztiak izango lirateke garrantzitsuak. Programa eraikitzen zen heinean proba asko egin dira jada sistema guztiak ondo zebiltzala konprobatzeko. Sekzio honetan amaierako bertsioa probatzeko diseinatu den proba multzoa deskribatzen da. Ez du inondik ere kasuistika guztien domeinua betetzen, baina arrazoizko proba multzoa da.
 
+Proba guztiak jarraian daude, konfigurazio fitxategiaren edukia lehendabizi eta gero lortutako emaitza. Proba guztietan programak behar bezala erantzun du, zentzuzko emaitzak eta errore mezu egokiak emanez.
+
 Probak egiteko lau funtzio erabiliko dira.
 
 $$f(x) = \sin{x} + x + 5$$
@@ -664,66 +666,572 @@ Hasteko, konfigurazio fitxategiaren irakurlea ondo dabilela ziurtatuko dugu. Bes
 
 \paragraph{Fitxategi hutsa}
 
-\begin{verbatim}
+\begin{lstlisting}
 [x] Ez da aurkitu dimentsioa.
 [x] Ezin izan da konfigurazio fitxategia ondo irakurri.
-\end{verbatim}
+\end{lstlisting}
 
 \paragraph{Dimensio desegokia}
 
-\begin{verbatim}
+\begin{lstlisting}
 dimentsioa 0
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 [x] Dimentsioak zero baina handiagoa izan behar du.
 [?] LERROA: dimentsioa 0
 [x] Ezin izan da konfigurazio fitxategia ondo irakurri.
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
 dimentsioa
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 [x] Sintaxi desegokia dimentsioa emateko lerroan.
 [?] LERROA: dimentsioa
 [x] Ezin izan da konfigurazio fitxategia ondo irakurri.
-\end{verbatim}
+\end{lstlisting}
 
 \paragraph{X0-ren tamaina desegokia}
 
-\begin{verbatim}
+\begin{lstlisting}
 dimentsioa 2
 0.5
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 [x] Dimentsioa eta X0-ren tamaina ez datoz bat.
 [x] Ezin izan da konfigurazio fitxategia ondo irakurri.
 [?] DIMENTSIOA: 2
 [?] TAMAINA: 1
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
 dimentsioa 2
 0.5
 0.5
 0.5
-\end{verbatim}
+\end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}
 [x] X0-ren elementu kopurura dimentsioa baina handiagoa da.
 [x] Ezin izan da konfigurazio fitxategia ondo irakurri.
 [?] DIMENTSIOA: 2
-\end{verbatim}
+\end{lstlisting}
 
 \paragraph{Aukera desegokiak}
 
+\begin{lstlisting}
+dimentsioa 2
+0.5
+0.5
+tolerantzia 0
+\end{lstlisting}
+
+\begin{lstlisting}
+[x] Tolerantziak zero baina handiagoa izan behar du.
+[?] LERROA: tolerantzia 0
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+0.5
+0.5
+erlatiboa 1
+\end{lstlisting}
+
+\begin{lstlisting}
+[x] Sintaxi desegokia tolerantzia erlatiboa aukeratzeko lerroan. Aukera honek 'bai' eta 'ez' balioak hartu ditzake soilik.
+[?] LERROA: erlatiboa 1
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+0.5
+0.5
+iterazio_maximoa bai
+\end{lstlisting}
+
+\begin{lstlisting}
+[x] Sintaxi okerra iterazio kopuru maximoa emateko lerroan. Kopuruak ezin du negatiboa izan.
+[?] LERROA: iterazio_maximoa bai
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+0.5
+0.5
+iterazio_maxi
+\end{lstlisting}
+
+\begin{lstlisting}
+[x] Sintaxi desegokia.
+[?] LERROA: iterazio_maxi
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+\end{lstlisting}
+
 \subsection{Proba orokorrak}
 
-Sekzio honetan $f(x)$, $g(x)$, $h(x)$ eta $i(x)$ funtzioak probatuko ditugu lehenetsitako aukerekin.
+Sekzio honetan $f(x)$, $g(x)$, $h(x)$ eta $i(x)$ funtzioak probatuko ditugu lehenetsitako aukerekin eta hainbat hasierako puntu desberdinekin.
+
+\paragraph{f(x)}
+
+\begin{lstlisting}
+dimentsioa 1
+-10
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-5.6175550052727)
+Errore maximoa: 0
+Erroaren irudia: (0)
+Iterazio kopurua: 20
+Denbora: 5.8e-05 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 1
+-4
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (-5.62720995967446)
+Errore maximoa: 0.0490446559839494
+Erroaren irudia: (0)
+Iterazio kopurua: 25
+Denbora: 6e-05 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 1
+2
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-5.6175550052727)
+Errore maximoa: 2.91777626503143e-14
+Erroaren irudia: (0)
+Iterazio kopurua: 12
+Denbora: 7.5e-05 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 1
+10
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (-5.64099956638925)
+Errore maximoa: 0.124303134286246
+Erroaren irudia: (0)
+Iterazio kopurua: 25
+Denbora: 6.6e-05 seg
+\end{lstlisting}
+
+\paragraph{g(x)}
+
+\begin{lstlisting}
+dimentsioa 1
+-10
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (4.57155760877328e+53)
+Errore maximoa: 1
+Erroaren irudia: (0)
+Iterazio kopurua: 25
+Denbora: 4.6e-05 seg
+\end{lstlisting}
+
+Badirudi funtzioa $OX$ ardatzarekiko ia paraleloa dela alde honetan.
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 1
+-3
+\end{lstlisting}
+
+\begin{lstlisting}
+[x] GSL DOMAIN ERROR: matrix is singular
+[x] Ezin izan da JX * x = FX ekuazio sistema lineala ebatzi LU deskonposaketa erabiliz.
+[?] HURBILPEN PARTZIALA: (inf)
+[?] ERRORE MAXIMOA: 0
+[?] F(X): (1)
+[?] ITERAZIO_KOPURUA: 6
+[x] Ezin izan da emaitza kalkulatu.
+\end{lstlisting}
+
+Singularitatearen eragina.
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 1
+-1
+\end{lstlisting}
+
+\begin{lstlisting}
+[x] Ezin izan da norma kalkulatu, posible da bektorea handiegia izatea.
+[x] JX * x = FX ekuazio sistema linealaren emaitzaren norma kalkulatzean errore kritiko bat egon da.
+[?] F(X): (inf)
+[?] ITERAZIO_KOPURUA: 0
+[x] Ezin izan da emaitza kalkulatu.
+\end{lstlisting}
+
+Berriro ere, singularitatearen eragina, oraingoan beste ondorio batekin.
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 1
+-1.5
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-2)
+Errore maximoa: 1.11022300273147e-16
+Erroaren irudia: (0)
+Iterazio kopurua: 14
+Denbora: 4.2e-05 seg
+\end{lstlisting}
+
+\paragraph{h(x)}
+
+\begin{lstlisting}
+dimentsioa 2
+-0.5
+-0.5
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-0.62348162354728, -0.483550211560948)
+Errore maximoa: 3.90140307434964e-15
+Erroaren irudia: (0, -4.44089209850063e-16)
+Iterazio kopurua: 10
+Denbora: 6.8e-05 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+0.5
+0.5
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (15.3975864809102, -3.04390514374893)
+Errore maximoa: 1.00573481211718
+Erroaren irudia: (0, -154.36270772125)
+Iterazio kopurua: 25
+Denbora: 8.6e-05 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+2
+-1.5
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (7.10044925875855e+104, 7.50743005353933e+104)
+Errore maximoa: 1
+Erroaren irudia: (0, 2.1322450463534e+210)
+Iterazio kopurua: 25
+Denbora: 0.000139 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+0.2
+2.8
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (4519.04355220343, -1277.95706971561)
+Errore maximoa: 0.999994169848742
+Erroaren irudia: (0, -23107046.2212779)
+Iterazio kopurua: 25
+Denbora: 0.000105 seg
+\end{lstlisting}
+
+\paragraph{i(x)}
+
+\begin{lstlisting}
+dimentsioa 2
+-5
+0
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-3, 1)
+Errore maximoa: 5.84789221753915e-14
+Erroaren irudia: (0, 0)
+Iterazio kopurua: 11
+Denbora: 4.5e-05 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+0
+0
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (-1.62292163852467e+21, -1.62292163852467e+21)
+Errore maximoa: 1
+Erroaren irudia: (0, 4)
+Iterazio kopurua: 25
+Denbora: 5.8e-05 seg
+\end{lstlisting}
+
+Jakobitar partzialki nuluaren eragina.
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+0.1
+0.1
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (-1.64588417637377e+15, -1.64588417637376e+15)
+Errore maximoa: 1
+Erroaren irudia: (0, 0)
+Iterazio kopurua: 25
+Denbora: 5.3e-05 seg
+\end{lstlisting}
+
+\rule{12cm}{0.4pt}
+
+\begin{lstlisting}
+dimentsioa 2
+3
+0.5
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (2, 6)
+Errore maximoa: 0
+Erroaren irudia: (0, 0)
+Iterazio kopurua: 10
+Denbora: 7e-05 seg
+\end{lstlisting}
 
 \subsection{Aukeren probak}
+
+Lehengo sekzioan erabilitako funtzioekin eta hasierako puntuekin aukeren balio ez lehenetsiak probatuko dira, proba bat aukera bakoitzeko.
+
+\paragraph{Tolerantzia}
+
+$g(x) = 1 + \frac{1}{x + 1}$
+
+\begin{lstlisting}
+dimentsioa 1
+-1.5
+tolerantzia 1.0e-18
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-2)
+Errore maximoa: 0
+Erroaren irudia: (0)
+Iterazio kopurua: 15
+Denbora: 5.1e-05 seg
+\end{lstlisting}
+
+\paragraph{Tolerantzia erlatiboa}
+
+$i(x) = \left(
+\begin{array}{c}
+x^2 + y - 10\\
+x - y + 4
+\end{array}
+\right)$
+
+\begin{lstlisting}
+dimentsioa 2
+-5
+0
+erlatiboa ez
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-3, 1)
+Errore maximoa: 1.84926589185966e-13
+Erroaren irudia: (0, 0)
+Iterazio kopurua: 11
+Denbora: 4.9e-05 seg
+\end{lstlisting}
+
+\paragraph{Zerorekiko distantzia maximoa}
+
+$h(x) = \left(
+\begin{array}{c}
+-1 + x^2 + y^2 - \cos{x}\sin{y}\\
+xy - \cos{y} - \sin{x}
+\end{array}
+\right)$
+
+\begin{lstlisting}
+dimentsioa 2
+-0.5
+-0.5
+max_zero_distantzia 1.0e-18
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (-0.62348162354728, -0.483550211560947)
+Errore maximoa: 8.49818695594572e-17
+Erroaren irudia: (0, 1.11022302462516e-16)
+Iterazio kopurua: 25
+Denbora: 7e-05 seg
+\end{lstlisting}
+
+\paragraph{Ordezko norma}
+
+$i(x) = \left(
+\begin{array}{c}
+x^2 + y - 10\\
+x - y + 4
+\end{array}
+\right)$
+
+\begin{lstlisting}
+double norma(int dim, double* x) {
+	int sum = 0;
+	int i;
+	for (i = 0; i < dim; ++i) {
+		sum += fabs(x[i]);	
+	}
+	return sum;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+dimentsioa 2
+3
+0.5
+ordezko_norma bai
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio mugara iritsi da.
+
+Erroa: (2, 6)
+Errore maximoa: inf
+Erroaren irudia: (0, 0)
+Iterazio kopurua: 25
+Denbora: 4.9e-05 seg
+\end{lstlisting}
+
+\paragraph{Iterazio kopuru maximoa}
+
+$f(x) = \sin{x} + x + 5$
+
+\begin{lstlisting}
+dimentsioa 1
+10
+iterazio_maximoa 1000
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-5.6175550052727)
+Errore maximoa: 2.83199878793792e-15
+Erroaren irudia: (0)
+Iterazio kopurua: 32
+Denbora: 6e-05 seg
+\end{lstlisting}
+
+\paragraph{Iterazio dibergente kopuru maximoa}
+
+$g(x) = 1 + \frac{1}{x + 1}$
+
+\begin{lstlisting}
+dimentsioa 1
+-10
+dibergentzia_iterazio_maximoa 1
+\end{lstlisting}
+
+\begin{lstlisting}
+[!] Iterazio dibergente mugara iritsi da.
+
+Erroa: (222471.632134508)
+Errore maximoa: 0.997888849461898
+Erroaren irudia: (0)
+Iterazio kopurua: 7
+Denbora: 4e-05 seg
+\end{lstlisting}
+
+\paragraph{Jakobiarraren berrerabilpena}
+
+$h(x) = \left(
+\begin{array}{c}
+-1 + x^2 + y^2 - \cos{x}\sin{y}\\
+xy - \cos{y} - \sin{x}
+\end{array}
+\right)$
+
+\begin{lstlisting}
+dimentsioa 2
+0.5
+0.5
+jakobiar_berrerabilpena 0
+\end{lstlisting}
+
+\begin{lstlisting}
+Erroa: (-0.912404292937766, -0.205932459272966)
+Errore maximoa: 3.7631492953713e-16
+Erroaren irudia: (0, -1.11022302462516e-16)
+Iterazio kopurua: 19
+Denbora: 7.7e-05 seg
+\end{lstlisting}
+
 
 \end{document}

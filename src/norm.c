@@ -1,5 +1,10 @@
 #include <math.h>
 
 double norma(int dim, double* x) {
-	return 0;
+	int sum = 0;
+	int i;
+	for (i = 0; i < dim; ++i) {
+		sum += fabs(x[i]);	
+	}
+	return sum;
 }
