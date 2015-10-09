@@ -287,8 +287,6 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 			fprintf(stderr,
 					"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
 					"norma kalkulatzean errore kritiko bat egon da.\n");
-			printf("[?] HURBILPEN PARTZIALA: ");
-			output_vector(dim, x);
 			printf("[?] F(X): ");
 			output_vector(dim, fx);
 			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
@@ -310,7 +308,6 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 			printf("[?] HURBILPEN PARTZIALA: ");
 			output_vector(dim, x);
 			printf("[?] ERRORE MAXIMOA: %.*g\n", DBL_DIG, max_err);
-			printf("[?] F(X): ");
 			output_vector(dim, fx);
 			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
@@ -335,8 +332,6 @@ ERR_T norm(int dim, double* x, double* n, struct options* options) {
 		case 1:
 			fprintf(stderr, "[x] Ezin izan da norma kalkulatu, posible da "
 					"bektorea handiegia izatea.\n");
-			printf("[?] BEKTOREA: ");
-			output_vector(dim, x);
 			break;
 	)
 
