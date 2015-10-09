@@ -418,7 +418,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 	EXCEPT(
 		case 1:
 			fprintf(stdout,
-					"[x] Ezin izan da konfigurazio fitxategia irakurri\n");
+					"[x] Ezin izan da konfigurazio fitxategia ireki.\n");
 			break;
 		case 2:
 			fprintf(stdout,
@@ -431,7 +431,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			printf("[?] LERROA: %s", line);
 			break;
 		case 4:
-			fprintf(stdout, "[x] Ez da aurkitu dimentsioa.");
+			fprintf(stdout, "[x] Ez da aurkitu dimentsioa.\n");
 			break;
 		case 5:
 			fprintf(stdout,
