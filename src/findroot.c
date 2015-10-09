@@ -334,33 +334,45 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 					sscanf(line, "tolerantzia %lf", &(options->tolerance)) == 1)
 				TRY(7, options->tolerance > 0.0)
 			} else if (MATCH(line, "erlatiboa")) {
-				options->rel_tol = 1;
+				if (MATCH(line, "erlatiboa bai")) {
+					options->rel_tol = 1;
+				} else if (MATCH(line, "erlatiboa ez")) {
+					options->rel_tol = 0;
+				} else {
+					TRY(8, 0);
+				}
 			} else if (MATCH(line, "max_zero_distantzia")) {
-				TRY(8,
+				TRY(9,
 					sscanf(line, "max_zero_distantzia %lf",
 							&(options->max_zero_dist)) == 1)
-				TRY(9, options->max_zero_dist > 0.0)
+				TRY(10, options->max_zero_dist > 0.0)
 			} else if (MATCH(line, "norma_alternatiboa")) {
-				options->user_norm = 1;
+				if (MATCH(line, "norma_alternatiboa bai")) {
+					options->user_norm = 1;
+				} else if (MATCH(line, "norma_alternatiboa ez")) {
+					options->user_norm = 0;
+				} else {
+					TRY(11, 0);
+				}
 			} else if (MATCH(line, "iterazio_maximoa")) {
-				TRY(10,	sscanf(line, "iterazio_maximoa %u",
+				TRY(12,	sscanf(line, "iterazio_maximoa %u",
 							&(options->max_iter)) == 1)
-				TRY(11, options->max_iter != 0)
+				TRY(13, options->max_iter != 0)
 			} else if (MATCH(line, "dibergentzia_iterazio_maximoa")) {
-				TRY(12, sscanf(line, "dibergentzia_iterazio_maximoa %u",
+				TRY(14, sscanf(line, "dibergentzia_iterazio_maximoa %u",
 						&(options->max_div_iter)) == 1)
 			} else if (MATCH(line, "jakobiar_berrerabilpena")) {
-				TRY(13, sscanf(line, "jakobiar_berrerabilpena %u",
+				TRY(15, sscanf(line, "jakobiar_berrerabilpena %u",
 							&(options->jx_reuse)) == 1)
 			} else {
-				TRY(14, count < *dim)
-				TRY(15, sscanf(line, "%lf", (*x0) + count) == 1)
+				TRY(16, count < *dim)
+				TRY(17, sscanf(line, "%lf", (*x0) + count) == 1)
 				++count;
 			}
 		}
 	}
 
-	TRY(16, count == *dim)
+	TRY(18, count == *dim)
 
 
 	EXCEPT(
@@ -393,48 +405,60 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			break;
 		case 8:
 			fprintf(stdout,
+					"[x] Sintaxi desegokia tolerantzia erlatiboa aukeratzeko "
+					"lerroan. Aukera honek 'bai' eta 'ez' balioak hartu "
+					"ditzake soilik.\n");
+			break;
+		case 9:
+			fprintf(stdout,
 					"[x] Sintaxi okerra zerotik distantzia maximoa emateko "
 					"lerroan.\n");
 			break;
-		case 9:
+		case 10:
 			fprintf(stdout,
 					"[x] Zerotik distantzia maximoak zero baina handiagoa izan "
 					"behar du.\n");
 			break;
-		case 10:
+		case 11:
+			fprintf(stdout,
+					"[x] Sintaxi desegokia norma alternatiboa aukeratzeko "
+					"lerroan. Aukera honek 'bai' eta 'ez' balioak hartu "
+					"ditzake soilik.\n");
+			break;
+		case 12:
 			fprintf(stdout,
 					"[x] Sintaxi okerra iterazio kopuru maximoa emateko "
 					"lerroan. Kopuruak ezin du negatiboa izan.\n");
 			break;
-		case 11:
+		case 13:
 			fprintf(stdout,
 					"[x] Iterazio kopuru maximoak ezin du zero izan.\n");
 			break;
-		case 12:
+		case 14:
 			fprintf(stdout,
 					"[x] Sintaxi okerra iterazio dibergente kopuru maximoa "
 					"emateko lerroan. Kopuruak ezin du negatiboa izan.\n");
 			break;
-		case 13:
+		case 15:
 			fprintf(stdout,
 					"[x] Sintaxi okerra jakobiarraren berrerabilpen ratioa "
 					"emateko lerroan. Ratioak ezin du negatiboa izan.\n");
 			break;
-		case 14:
+		case 16:
 			fprintf(stdout,
 					"[x] X0-ren elementu kopurura dimentsioa baina handiagoa "
 					"da.\n");
 			break;
-		case 15:
+		case 17:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
 					"batean.\n");
 			break;
-		case 16:
+		case 18:
 			fprintf(stdout,
 					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
 			break;
-		case 17:
+		case 19:
 			fprintf(stdout,
 					"[x] Konfigurazio fitxategia ixtean errore kritiko bat "
 					"egon da.\n");
@@ -443,7 +467,7 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 
 	FINALLY(
 		if (f != NULL) {
-			TRY(17, fclose(f) == OK);
+			TRY(19, fclose(f) == OK);
 
 			// On fail, so that it doesn't try again and again
 			f = NULL;
