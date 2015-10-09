@@ -196,9 +196,9 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 		// x == a
 		// x0 == c
 
-		TRY(5, norm(dim, x0, &max_err, options) == OK)
+		TRY(5, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
 
-		TRY(6, gsl_vector_sub(&x_gsl.vector, &x0_gsl.vector) == OK)
+		TRY(6, norm(dim, x0, &max_err, options) == OK)
 
 		// Relative error
 		if (options->rel_tol) {
@@ -277,18 +277,18 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 			break;
 		case 5:
 			fprintf(stderr,
-					"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
-					"norma kalkulatzean errore kritiko bat egon da.\n");
-			printf("[?] HURBILPEN PARTZIALA: ");
-			output_vector(dim, x);
+					"[x] Bektoreen arteko kenketa egitean errore kritiko "
+					"bat egon da.");
 			printf("[?] F(X): ");
 			output_vector(dim, fx);
 			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
 		case 6:
 			fprintf(stderr,
-					"[x] Bektoreen arteko kenketa egitean errore kritiko "
-					"bat egon da.");
+					"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
+					"norma kalkulatzean errore kritiko bat egon da.\n");
+			printf("[?] HURBILPEN PARTZIALA: ");
+			output_vector(dim, x);
 			printf("[?] F(X): ");
 			output_vector(dim, fx);
 			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
