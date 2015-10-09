@@ -114,6 +114,7 @@ int main(int argc, char** argv) {
 		case 3:
 			fprintf(stderr,
 					"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+			printf("[?] MEMORIA KOPURUA: %lu\n", dim * sizeof(double));
 			break;
 		case 4:
 			fprintf(stderr, "[x] Ezin izan da emaitza kalkulatu.\n");
@@ -171,6 +172,7 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 
 	iter_count = 0;
 	iter_div_count = 0;
+	max_err = DBL_MAX;
 	max_err_prev = DBL_MAX;
 	jx_reuse_count = options->jx_reuse;
 
@@ -242,39 +244,75 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 
 	EXCEPT(
 		case 1:
+			fprintf(stderr,
+					"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+			printf("[?] MEMORIA KOPURUA: %lu\n", dim * sizeof(double));
+			break;
 		case 2:
 			fprintf(stderr,
 					"[x] Ezin izan da memoria nahikoa erreserbatu.\n");
+			printf("[?] MEMORIA KOPURUA: %lun", dim * dim * sizeof(double));
 			break;
 		case 3:
 			fprintf(stderr,
 					"[x] Ezin izan da JX * x = FX ekuazio sistema "
 					"linealaren LU deskonposaketa egin.\n");
+			printf("[?] HURBILPEN PARTZIALA: ");
+			output_vector(dim, x);
+			printf("[?] ERRORE MAXIMOA: %.*g\n", DBL_DIG, max_err);
+			printf("[?] F(X): ");
+			output_vector(dim, fx);
+			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
 		case 4:
 			fprintf(stderr,
 					"[x] Ezin izan da JX * x = FX ekuazio sistema lineala "
 					"ebatzi LU deskonposaketa erabiliz.\n");
+			printf("[?] HURBILPEN PARTZIALA: ");
+			output_vector(dim, x);
+			printf("[?] ERRORE MAXIMOA: %.*g\n", DBL_DIG, max_err);
+			printf("[?] F(X): ");
+			output_vector(dim, fx);
+			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
 		case 5:
 			fprintf(stderr,
 					"[x] JX * x = FX ekuazio sistema linealaren emaitzaren "
 					"norma kalkulatzean errore kritiko bat egon da.\n");
+			printf("[?] HURBILPEN PARTZIALA: ");
+			output_vector(dim, x);
+			printf("[?] F(X): ");
+			output_vector(dim, fx);
+			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
 		case 6:
 			fprintf(stderr,
 					"[x] Bektoreen arteko kenketa egitean errore kritiko "
 					"bat egon da.");
+			printf("[?] F(X): ");
+			output_vector(dim, fx);
+			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
 		case 7:
 			fprintf(stderr,
 					"[x] x-ren norma kalkulatzean errore kritiko bat egon "
 					"da.\n");
+			printf("[?] HURBILPEN PARTZIALA: ");
+			output_vector(dim, x);
+			printf("[?] F(X): ");
+			output_vector(dim, fx);
+			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
 		case 8:
 			fprintf(stderr,
 					"[x] f(x)-ren norma kalkulatzean errore kritiko bat egon "
 					"da.\n");
+			printf("[?] HURBILPEN PARTZIALA: ");
+			output_vector(dim, x);
+			printf("[?] ERRORE MAXIMOA: %.*g\n", DBL_DIG, max_err);
+			printf("[?] F(X): ");
+			output_vector(dim, fx);
+			printf("[?] ITERAZIO_KOPURUA: %u\n", iter_count);
 			break;
 	)
 
@@ -297,6 +335,8 @@ ERR_T norm(int dim, double* x, double* n, struct options* options) {
 		case 1:
 			fprintf(stderr, "[x] Ezin izan da norma kalkulatu, posible da "
 					"bektorea handiegia izatea.\n");
+			printf("[?] BEKTOREA: ");
+			output_vector(dim, x);
 			break;
 	)
 
@@ -383,10 +423,12 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 		case 2:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia dimentsioa emateko lerroan\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 3:
 			fprintf(stdout,
 					"[x] Dimentsioak zero baina handiagoa izan behar du\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 4:
 			fprintf(stdout, "[x] Ez da aurkitu dimentsioa.");
@@ -394,69 +436,84 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 		case 5:
 			fprintf(stdout,
 					"[x] Ezin izan da X0-rentzat memoria erreserbatu\n.");
+			printf("[?] MEMORIA KOPURUA: %lu", (*dim) * sizeof(double));
 			break;
 		case 6:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia tolerantzia emateko lerroan\n.");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 7:
 			fprintf(stdout,
 					"[x] Tolerantziak zero baina handiagoa izan behar du.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 8:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia tolerantzia erlatiboa aukeratzeko "
 					"lerroan. Aukera honek 'bai' eta 'ez' balioak hartu "
 					"ditzake soilik.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 9:
 			fprintf(stdout,
 					"[x] Sintaxi okerra zerotik distantzia maximoa emateko "
 					"lerroan.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 10:
 			fprintf(stdout,
 					"[x] Zerotik distantzia maximoak zero baina handiagoa izan "
 					"behar du.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 11:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia ordezko norma aukeratzeko "
 					"lerroan. Aukera honek 'bai' eta 'ez' balioak hartu "
 					"ditzake soilik.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 12:
 			fprintf(stdout,
 					"[x] Sintaxi okerra iterazio kopuru maximoa emateko "
 					"lerroan. Kopuruak ezin du negatiboa izan.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 13:
 			fprintf(stdout,
 					"[x] Iterazio kopuru maximoak ezin du zero izan.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 14:
 			fprintf(stdout,
 					"[x] Sintaxi okerra iterazio dibergente kopuru maximoa "
 					"emateko lerroan. Kopuruak ezin du negatiboa izan.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 15:
 			fprintf(stdout,
 					"[x] Sintaxi okerra jakobiarraren berrerabilpen ratioa "
 					"emateko lerroan. Ratioak ezin du negatiboa izan.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 16:
 			fprintf(stdout,
 					"[x] X0-ren elementu kopurura dimentsioa baina handiagoa "
 					"da.\n");
+			printf("[?] DIMENTSIOA: %i", *dim);
 			break;
 		case 17:
 			fprintf(stdout,
 					"[x] Sintaxi desegokia X0-ren elementu bat emateko lerro "
 					"batean.\n");
+			printf("[?] LERROA: %s", line);
 			break;
 		case 18:
 			fprintf(stdout,
 					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
+			printf("[?] DIMENTSIOA: %i", *dim);
+			printf("[?] TAMAINA: %i", count);
 			break;
 		case 19:
 			fprintf(stdout,
