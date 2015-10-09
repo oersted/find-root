@@ -9,8 +9,8 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_errno.h>
 
-#include "funtzioa.h"
-#include "norma.h"
+#include "function.h"
+#include "norm.h"
 
 // Exception system configuration
 #define ERR_T int
