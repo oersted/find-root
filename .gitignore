@@ -43,3 +43,6 @@ latex-adibidea.tex
 *.aux
 *.log
 *.synctex.gz
+
+# FindRoot
+findroot
