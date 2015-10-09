@@ -4,9 +4,10 @@
 \usepackage[basque]{babel}
 \usepackage[parfill]{parskip}
 \usepackage{listings}
+\usepackage{graphicx}
 
+\graphicspath{{plots/}}
 \lstset{language=C, breaklines=true, tabsize=4,showstringspaces=false}
-
 \author{Jon Ezeiza}
 \title{FindRoot funtzioaren inplementazioa}
 \begin{document}
@@ -147,6 +148,29 @@ Programa eraikitzean faktore guzti hauek hartu dira kontuan. Hona hemen, inpleme
 
 \subsubsection{Konpilazioa}
 
+Programa erraz konpilatzeko \emph{Makefile} bat gehitu da. Hortaz, \emph{make} programa erabiltzea nahikoa da exekutagarria lortzeko. Programaren zatiak independenteki konpilatzeko ere aukera ematen du \emph{Makefile}-ak.
+
+\begin{itemize}
+\item \emph{make} programa osoa konpilatzeko.
+\item \emph{make findroot.o} programa nagusia soilik konpilatzeko.
+\item \emph{make function.o} prozesatu beharreko funtzioa soilik konpilatzeko.
+\item \emph{make norm.o} ordezko norma soilik konpilatzeko.
+\item \emph{make clean} konpilazioan sortutako fitxategiak ezabatzeko.
+\end{itemize}
+
+Honetarako, ordea \emph{make} programa eta \emph{GSL} liburutegia instalatuta eduki behar dira.
+
+\emph{GSL} aparte konpilatuta badago, honela konpilatu daiteke programa hau.
+
+\begin{lstlisting}
+gcc -Wall findroot.c function.c norm.c -o findroot -lgsl -lgslcblas -lm -O2 -I<a> -L<b>
+\end{lstlisting}
+
+\begin{itemize}
+\item <a>: GSL liburutegi konpilatuaren \emph{include} direktorioaren path absolutua.
+\item <b>: GSL liburutegi konpilatuaren \emph{lib} direktorioaren path absolutua.
+\end{itemize}
+
 \subsubsection{Exekuzioa}
 
 Behin konpilazioa bukatuta, lortutako exekutagarriari deitzea nahikoa izango da programa hasteko. Programa parametrorik gabe exekutatzen bada, errore mezu bat agertuko da konfigurazio fitxategiaren izena pasa behar zaiola esanez. Exekutagarriak berak, ez du parametro gehiagorik hartzen, sarrera datu guztiak konfigurazio fitxategitik irakurriko baititu.
@@ -167,7 +191,7 @@ Datu hauek soilik ematea nahikoa da programa era normalean erabiltzeko. Hala ere
 
 Hona hemen fitxategiak izan behar duen sintaxia.
 
-\begin{lstlisting}
+\begin{verbatim}
 dimentsioa n
 X1
 X2
@@ -175,7 +199,7 @@ X2
 Xn
 <aukera_izena> <balioa>
 ...
-\end{lstlisting}
+\end{verbatim}
 
 Lerro hutsak eta \emph{\#} karakterearekin hasten diren lerro guztiak ez dira kontuan hartuko. Gainera, inplementazioaren izaeragatik, sintaxi egokiko lerro baten ondoren edozer jartzea onartzen da, lerro berean dagoen bitartean. Programak bakarrik lerroaren balizko hasiera hartuko du kontuan. Dena den, gomendagarria da ezer gehigarririk ez jartzea.
 
@@ -560,7 +584,7 @@ Kontagailu bat eta begiztari baldintza gehitzea nahikoa izan da.
 
 \paragraph{Iterazio dibergente kopuru maximoa}
 
-Borne hau ezartzeko \verb|max_error_prev| aldagai berri bat sortu behar izan da aurreko iterazioko errorea gordetzeko eta iterazio honetako errorearekin konparatzeko. Errorea aurreko iteraziokoa baina handiagoa denean algoritmoa dibergitzen ari dela jakingo da. Hau gertatzen den iterazio bakoitza zenbatuko da eta segidan ezarritako muga baina iterazio dibergente gehiago egiten badira prozesua amaituko da.
+Borne hau ezartzeko aldagai berri bat sortu behar izan da aurreko iterazioko errorea gordetzeko eta iterazio honetako errorearekin konparatzeko. Errorea aurreko iteraziokoa baina handiagoa denean algoritmoa dibergitzen ari dela jakingo da. Hau gertatzen den iterazio bakoitza zenbatuko da eta segidan ezarritako muga baina iterazio dibergente gehiago egiten badira prozesua amaituko da.
 
 \begin{lstlisting}
 	// Track divergence iterations
@@ -594,10 +618,112 @@ if (jx_reuse_count == options->jx_reuse) {
 
 \section{Probak}
 
+Inplementazioa egin ondoren, azken pausua ondo dabilela ziurtatzea da. Proba guztiak emandako \emph{Makefile}-arekin konpilatutako exekutagarriarekin egin dira.
+
+Proba kasu pila diseinatu daitezke horrelako programa baterako, eta guztiak izango lirateke garrantzitsuak. Programa eraikitzen zen heinean proba asko egin dira jada sistema guztiak ondo zebiltzala konprobatzeko. Sekzio honetan amaierako bertsioa probatzeko diseinatu den proba multzoa deskribatzen da. Ez du inondik ere kasuistika guztien domeinua betetzen, baina arrazoizko proba multzoa da.
+
+Probak egiteko lau funtzio erabiliko dira.
+
+$$f(x) = \sin{x} + x + 5$$
+
+\begin{center}
+\includegraphics[scale=0.5]{plot_fx.png}
+\end{center}
+
+$$g(x) = 1 + \frac{1}{x + 1}$$
+
+\begin{center}
+\includegraphics[scale=0.5]{plot_gx.png}
+\end{center}
+
+$$h(x) = \left(
+\begin{array}{c}
+-1 + x^2 + y^2 - \cos{x}\sin{y}\\
+xy - \cos{y} - \sin{x}
+\end{array}
+\right)$$
+
+\begin{center}
+\includegraphics[scale=0.5]{plot_hx.png}
+\end{center}
+
+$$i(x) = \left(
+\begin{array}{c}
+x^2 + y - 10\\
+x - y + 4
+\end{array}
+\right)$$
+
+\begin{center}
+\includegraphics[scale=0.5]{plot_ix.png}
+\end{center}
+
 \subsection{S/I probak}
 
-\subsubsection{Proba orokorrak}
+Hasteko, konfigurazio fitxategiaren irakurlea ondo dabilela ziurtatuko dugu. Beste probetan jada probatuko da konfigurazio sintaxi egokia, beraz, hemen sintaxi erroreak detektatzen dituela ziurtatuko da.
 
-\subsubsection{Aukeren probak}
+\paragraph{Fitxategi hutsa}
+
+\begin{verbatim}
+[x] Ez da aurkitu dimentsioa.
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+\end{verbatim}
+
+\paragraph{Dimensio desegokia}
+
+\begin{verbatim}
+dimentsioa 0
+\end{verbatim}
+
+\begin{verbatim}
+[x] Dimentsioak zero baina handiagoa izan behar du.
+[?] LERROA: dimentsioa 0
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+\end{verbatim}
+
+\begin{verbatim}
+dimentsioa
+\end{verbatim}
+
+\begin{verbatim}
+[x] Sintaxi desegokia dimentsioa emateko lerroan.
+[?] LERROA: dimentsioa
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+\end{verbatim}
+
+\paragraph{X0-ren tamaina desegokia}
+
+\begin{verbatim}
+dimentsioa 2
+0.5
+\end{verbatim}
+
+\begin{verbatim}
+[x] Dimentsioa eta X0-ren tamaina ez datoz bat.
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+[?] DIMENTSIOA: 2
+[?] TAMAINA: 1
+\end{verbatim}
+
+\begin{verbatim}
+dimentsioa 2
+0.5
+0.5
+0.5
+\end{verbatim}
+
+\begin{verbatim}
+[x] X0-ren elementu kopurura dimentsioa baina handiagoa da.
+[x] Ezin izan da konfigurazio fitxategia ondo irakurri.
+[?] DIMENTSIOA: 2
+\end{verbatim}
+
+\paragraph{Aukera desegokiak}
+
+\subsection{Proba orokorrak}
+
+Sekzio honetan $f(x)$, $g(x)$, $h(x)$ eta $i(x)$ funtzioak probatuko ditugu lehenetsitako aukerekin.
+
+\subsection{Aukeren probak}
 
 \end{document}
