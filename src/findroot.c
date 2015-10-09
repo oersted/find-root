@@ -73,14 +73,10 @@ void handler(const char* reason, const char* file, int line, int gsl_errno);
 int main(int argc, char** argv) {
 	int dim;
 	char* path;
-	double* x;
-	double* x0;
+	double* x = NULL;
+	double* x0 = NULL;
 	struct options options;
 	struct additional_data additional_data;
-
-	// Initialize pointers with to free safely
-	x = NULL;
-	x0 = NULL;
 
 	// Save the conf file path
 	TRY(1, argc == 2)
@@ -135,17 +131,11 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 	int s;
 	unsigned int iter_count, iter_div_count, jx_reuse_count;
 	double max_err, max_err_prev, zero_dist;
-	double* fx;
-	double* jx;
+	double* fx = NULL;
+	double* jx = NULL;
 	clock_t begin, end;
 
-	begin = clock();
-
 	// INITIALIZATION
-
-	// Initialize pointers with NULL to free safely
-	fx = NULL;
-	jx = NULL;
 
 	TRY(1, (fx = (double*) malloc(dim * sizeof(double))) != NULL)
 	TRY(2, (jx = (double*) malloc(dim * dim * sizeof(double))) != NULL)
@@ -159,6 +149,7 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 	gsl_permutation* p = gsl_permutation_alloc(dim);
 
 	// NEWTON-RAPHSON LOOP
+	begin = clock();
 
 	/*
 	 * a, b and c are vectors of dim dimensions
@@ -238,6 +229,11 @@ ERR_T findroot(int dim, double* x0, double* x, struct options* options,
 			iter_div_count < options->max_div_iter);
 
 	end = clock();
+
+	if (iter_count == options->max_iter)
+		printf("[!] Iterazio mugara iritsi da.\n");
+	if (iter_div_count == options->max_div_iter)
+		printf("[!] Iterazio dibergente mugara iritsi da.\n");
 
 	data->max_error = max_err;
 	data->fx = fx;
@@ -438,14 +434,26 @@ ERR_T input_data(char* path, int* dim, double** x0, struct options* options) {
 			fprintf(stdout,
 					"[x] Dimentsioa eta X0-ren tamaina ez datoz bat.\n");
 			break;
+		case 17:
+			fprintf(stdout,
+					"[x] Konfigurazio fitxategia ixtean errore kritiko bat "
+					"egon da.\n");
+			break;
 	)
 
 	FINALLY(
-		fclose(f);
+		if (f != NULL) {
+			TRY(17, fclose(f) == OK);
+
+			// On fail, so that it doesn't try again and again
+			f = NULL;
+		}
 	)
 }
 
 void output_result(int dim, double* result, struct additional_data* data) {
+	printf("\n");
+
 	printf("Erroa: ");
 	output_vector(dim, result);
 
@@ -457,6 +465,8 @@ void output_result(int dim, double* result, struct additional_data* data) {
 	printf("Iterazio kopurua: %u\n", data->iter_count);
 
 	printf("Denbora: %.*g seg\n", DBL_DIG, data->delta_t);
+
+	printf("\n");
 }
 
 void output_vector(int dim, double* x) {
